@@ -1,0 +1,185 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scenes/levels/level.gd" id="1_level"]
+[ext_resource type="PackedScene" path="res://scenes/levels/park_background.tscn" id="2_bg"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/world/platform.tscn" id="4_platform"]
+[ext_resource type="PackedScene" path="res://scenes/world/water.tscn" id="5_water"]
+[ext_resource type="PackedScene" path="res://scenes/world/slide.tscn" id="6_slide"]
+[ext_resource type="PackedScene" path="res://scenes/world/sign.tscn" id="7_sign"]
+[ext_resource type="PackedScene" path="res://scenes/world/checkpoint.tscn" id="8_checkpoint"]
+[ext_resource type="PackedScene" path="res://scenes/world/finish_line.tscn" id="9_finish"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/moving_platform.tscn" id="10_moving"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/vanishing_platform.tscn" id="11_vanish"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/swinging_hammer.tscn" id="12_hammer"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/water_jet.tscn" id="13_jet"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/bounce_pad.tscn" id="14_bounce"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="15_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/touch_controls.tscn" id="16_touch"]
+[ext_resource type="PackedScene" path="res://scenes/ui/result_screen.tscn" id="17_result"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_left"]
+normal = Vector2(1, 0)
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_right"]
+normal = Vector2(-1, 0)
+
+[node name="Level01" type="Node2D"]
+script = ExtResource("1_level")
+level_id = "parque_aquatico"
+level_name = "Parque Aquático"
+gold_time = 30.0
+silver_time = 55.0
+camera_limit_right = 6300
+
+[node name="ParkBackground" parent="." instance=ExtResource("2_bg")]
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Signs" type="Node2D" parent="World"]
+
+[node name="SignRun" parent="World/Signs" instance=ExtResource("7_sign")]
+position = Vector2(190, 540)
+text = "Use as SETAS\npara correr"
+
+[node name="SignJump" parent="World/Signs" instance=ExtResource("7_sign")]
+position = Vector2(470, 540)
+text = "Toque em PULAR\npara saltar!"
+
+[node name="SignHammer" parent="World/Signs" instance=ExtResource("7_sign")]
+position = Vector2(880, 540)
+text = "Cuidado com\no MARTELO!"
+
+[node name="SignRaft" parent="World/Signs" instance=ExtResource("7_sign")]
+position = Vector2(1370, 540)
+text = "Espere a boia\ne pule nela!"
+
+[node name="SignSlide" parent="World/Signs" instance=ExtResource("7_sign")]
+position = Vector2(2300, 540)
+text = "Suba e\nESCORREGUE!"
+
+[node name="SignJets" parent="World/Signs" instance=ExtResource("7_sign")]
+position = Vector2(4330, 540)
+text = "Jatos d'água!\nEspere parar"
+
+[node name="Platforms" type="Node2D" parent="World"]
+
+[node name="Start" parent="World/Platforms" instance=ExtResource("4_platform")]
+position = Vector2(0, 540)
+size = Vector2(620, 40)
+
+[node name="HammerRun" parent="World/Platforms" instance=ExtResource("4_platform")]
+position = Vector2(800, 540)
+size = Vector2(650, 40)
+
+[node name="BeforeSlide" parent="World/Platforms" instance=ExtResource("4_platform")]
+position = Vector2(2180, 540)
+size = Vector2(320, 40)
+
+[node name="Step1" parent="World/Platforms" instance=ExtResource("4_platform")]
+position = Vector2(2500, 430)
+size = Vector2(160, 150)
+pillar_depth = 40.0
+
+[node name="Step2" parent="World/Platforms" instance=ExtResource("4_platform")]
+position = Vector2(2660, 320)
+size = Vector2(160, 260)
+pillar_depth = 40.0
+
+[node name="SlideRunout" parent="World/Platforms" instance=ExtResource("4_platform")]
+position = Vector2(3340, 540)
+size = Vector2(220, 40)
+colors = PackedColorArray(0.117647, 0.533333, 0.898039, 1, 1, 1, 1, 1)
+slippery = true
+
+[node name="Landing" parent="World/Platforms" instance=ExtResource("4_platform")]
+position = Vector2(3800, 540)
+size = Vector2(650, 40)
+
+[node name="Walkway" parent="World/Platforms" instance=ExtResource("4_platform")]
+position = Vector2(4450, 540)
+size = Vector2(520, 18)
+colors = PackedColorArray(1, 1, 1, 1, 0.309804, 0.764706, 0.968627, 1)
+block_width = 60.0
+pillar_depth = 60.0
+
+[node name="Goal" parent="World/Platforms" instance=ExtResource("4_platform")]
+position = Vector2(5700, 540)
+size = Vector2(600, 40)
+
+[node name="Slide" parent="World" instance=ExtResource("6_slide")]
+position = Vector2(2820, 320)
+drop = Vector2(520, 220)
+support_depth = 280.0
+
+[node name="Obstacles" type="Node2D" parent="World"]
+
+[node name="Hammer1" parent="World/Obstacles" instance=ExtResource("12_hammer")]
+position = Vector2(1180, 240)
+
+[node name="Raft" parent="World/Obstacles" instance=ExtResource("10_moving")]
+position = Vector2(1460, 540)
+travel = Vector2(440, 0)
+period = 3.4
+
+[node name="BouncePad" parent="World/Obstacles" instance=ExtResource("14_bounce")]
+position = Vector2(3505, 540)
+
+[node name="Hammer2" parent="World/Obstacles" instance=ExtResource("12_hammer")]
+position = Vector2(4080, 240)
+period = 2.2
+phase = 0.5
+
+[node name="Jet1" parent="World/Obstacles" instance=ExtResource("13_jet")]
+position = Vector2(4620, 600)
+
+[node name="Jet2" parent="World/Obstacles" instance=ExtResource("13_jet")]
+position = Vector2(4820, 600)
+time_offset = 1.2
+
+[node name="Vanish1" parent="World/Obstacles" instance=ExtResource("11_vanish")]
+position = Vector2(5010, 540)
+size = Vector2(170, 30)
+
+[node name="Vanish2" parent="World/Obstacles" instance=ExtResource("11_vanish")]
+position = Vector2(5260, 490)
+size = Vector2(170, 30)
+
+[node name="Vanish3" parent="World/Obstacles" instance=ExtResource("11_vanish")]
+position = Vector2(5510, 540)
+size = Vector2(150, 30)
+
+[node name="Checkpoints" type="Node2D" parent="World"]
+
+[node name="Checkpoint1" parent="World/Checkpoints" instance=ExtResource("8_checkpoint")]
+position = Vector2(3880, 540)
+
+[node name="Checkpoint2" parent="World/Checkpoints" instance=ExtResource("8_checkpoint")]
+position = Vector2(4930, 540)
+
+[node name="Pool" parent="World" instance=ExtResource("5_water")]
+position = Vector2(-200, 600)
+size = Vector2(6800, 300)
+
+[node name="LeftWall" type="StaticBody2D" parent="World"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/LeftWall"]
+shape = SubResource("WorldBoundaryShape2D_left")
+
+[node name="RightWall" type="StaticBody2D" parent="World"]
+position = Vector2(6300, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/RightWall"]
+shape = SubResource("WorldBoundaryShape2D_right")
+
+[node name="FinishLine" parent="." instance=ExtResource("9_finish")]
+position = Vector2(6000, 540)
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector2(300, 540)
+
+[node name="TouchControls" parent="." instance=ExtResource("16_touch")]
+
+[node name="HUD" parent="." instance=ExtResource("15_hud")]
+
+[node name="ResultScreen" parent="." instance=ExtResource("17_result")]

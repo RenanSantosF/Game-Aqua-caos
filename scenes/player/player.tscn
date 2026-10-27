@@ -1,0 +1,35 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scenes/player/player_visual.gd" id="2_visual"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
+radius = 20.0
+height = 80.0
+
+[node name="Player" type="CharacterBody2D"]
+z_index = 5
+collision_layer = 2
+collision_mask = 1
+floor_max_angle = 0.959931
+floor_snap_length = 14.0
+script = ExtResource("1_player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -40)
+shape = SubResource("CapsuleShape2D_body")
+
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -42)
+script = ExtResource("2_visual")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, -90)
+limit_left = 0
+limit_top = -400
+limit_bottom = 820
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0
+drag_vertical_enabled = true
+drag_top_margin = 0.3
+drag_bottom_margin = 0.1

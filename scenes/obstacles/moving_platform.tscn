@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/obstacles/moving_platform.gd" id="1_moving"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_moving"]
+resource_local_to_scene = true
+size = Vector2(180, 32)
+
+[node name="MovingPlatform" type="AnimatableBody2D"]
+script = ExtResource("1_moving")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(90, 16)
+shape = SubResource("RectangleShape2D_moving")

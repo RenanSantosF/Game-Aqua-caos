@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/obstacles/vanishing_platform.gd" id="1_vanish"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+resource_local_to_scene = true
+size = Vector2(130, 30)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_detector"]
+resource_local_to_scene = true
+size = Vector2(126, 12)
+
+[node name="VanishingPlatform" type="StaticBody2D"]
+script = ExtResource("1_vanish")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(65, 15)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="Detector" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Detector"]
+position = Vector2(65, -4)
+shape = SubResource("RectangleShape2D_detector")

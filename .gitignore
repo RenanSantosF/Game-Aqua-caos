@@ -9,3 +9,7 @@
 *.aab
 *.keystore
 *.jks
+/build/
+
+# Keystore de TESTE (debug) usada pelo GitHub Actions — pode ficar no repositório.
+!ci/debug.keystore

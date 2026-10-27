@@ -1,20 +1,21 @@
 extends Control
-## Cena de teste da ETAPA 1.
-## Mostra a resolução real da tela para confirmar que o modo
-## horizontal e o redimensionamento adaptável estão funcionando.
+## Tela inicial: título e botão JOGAR.
 
-@onready var info_label: Label = $Center/VBox/InfoLabel
+@onready var _hero: Node2D = $Hero
 
 
 func _ready() -> void:
-	get_viewport().size_changed.connect(_atualizar_info)
-	_atualizar_info()
+	%PlayButton.pressed.connect(Game.play_level)
+	get_viewport().size_changed.connect(_layout)
+	_layout()
 
 
-func _atualizar_info() -> void:
-	var tela: Vector2i = DisplayServer.window_get_size()
-	var area_visivel: Vector2 = get_viewport_rect().size
-	var orientacao := "HORIZONTAL" if tela.x >= tela.y else "VERTICAL (verifique a configuração!)"
-	info_label.text = "Tela física: %d x %d\nÁrea do jogo: %d x %d\nOrientação: %s" % [
-		tela.x, tela.y, int(area_visivel.x), int(area_visivel.y), orientacao
-	]
+func _notification(what: int) -> void:
+	# Botão "voltar" do Android na tela inicial fecha o jogo.
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		get_tree().quit()
+
+
+func _layout() -> void:
+	var screen := get_viewport_rect().size
+	_hero.position = Vector2(screen.x * 0.16, screen.y - 200)

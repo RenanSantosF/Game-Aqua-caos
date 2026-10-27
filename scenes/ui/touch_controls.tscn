@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/touch_controls.gd" id="1_controls"]
+[ext_resource type="Script" path="res://scenes/ui/touch_button.gd" id="2_button"]
+
+[node name="TouchControls" type="CanvasLayer"]
+layer = 5
+script = ExtResource("1_controls")
+
+[node name="Left" type="TouchScreenButton" parent="."]
+position = Vector2(115, 610)
+passby_press = true
+action = "move_left"
+script = ExtResource("2_button")
+
+[node name="Right" type="TouchScreenButton" parent="."]
+position = Vector2(290, 610)
+passby_press = true
+action = "move_right"
+script = ExtResource("2_button")
+icon = 1
+
+[node name="Jump" type="TouchScreenButton" parent="."]
+position = Vector2(1150, 600)
+action = "jump"
+script = ExtResource("2_button")
+icon = 2
+radius = 85.0

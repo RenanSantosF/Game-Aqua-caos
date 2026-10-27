@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/world/finish_line.gd" id="1_finish"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_finish"]
+size = Vector2(40, 400)
+
+[node name="FinishLine" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+script = ExtResource("1_finish")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -200)
+shape = SubResource("RectangleShape2D_finish")
