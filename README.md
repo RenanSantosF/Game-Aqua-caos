@@ -1,33 +1,33 @@
 # Aqua Caos: Desafio Molhado
 
-Jogo mobile casual de obstáculos aquáticos feito em **Godot 4.3** (GDScript),
-desenvolvido inteiramente pelo celular Android.
+Corrida de obstáculos aquáticos em **3D** para celular, feita em
+**Godot 4.3** (GDScript) e desenvolvida pelo Android.
 
-Corra, pule, deslize e chegue primeiro!
+Corra, pule, mergulhe e chegue primeiro!
 
-## Status
+## Destaques
 
-| Etapa | Descrição | Guia |
-|---|---|---|
-| 1 | Projeto e tela horizontal | [docs/ETAPA_01.md](docs/ETAPA_01.md) ✅ |
-| 2 | Personagem e controles | [docs/ETAPAS_02_A_07.md](docs/ETAPAS_02_A_07.md) ✅ |
-| 3 | Corrida, pulo, gravidade e colisões | ✅ |
-| 4 | Primeiro percurso (piscinas e plataformas) | ✅ |
-| 5 | Obstáculos móveis | ✅ |
-| 6 | Quedas, respingos e reinício | ✅ |
-| 7 | Linha de chegada, cronômetro e resultados | ✅ |
-| 8 | Moedas, personagens e desbloqueios | — |
-| 9 | Salvamento local e novas fases | — |
-| 10 | Otimização Android, monetização e publicação | — |
+- Boneco cartoon 3D com animações exageradas e física divertida.
+- **Fases infinitas** geradas pelo número da fase, com dificuldade crescente.
+- 12 tipos de trecho:
+  - martelos, bastões giratórios, piso que cai e paredes que dão soco;
+  - bolas gigantes, gêiseres e esteiras;
+  - boias trampolim, discos giratórios e escorregadores;
+  - plataformas móveis e pulos entre plataformas.
+- Rivais controlados pelo computador e posição ao vivo.
+- 5 ambientações e um mundo vivo: ilhas, golfinhos, gaivotas e torcida.
+- Moedas, estrelas, recordes e progresso salvos no aparelho (offline).
+
+Detalhes, controles e como ajustar: [docs/JOGO_3D.md](docs/JOGO_3D.md).
 
 ## Baixar o APK (jogar no celular)
 
 O GitHub Actions gera um APK a cada push na `main`:
 
 - **Download direto:** [Release apk-teste](https://github.com/RenanSantosF/Game-Aqua-caos/releases/tag/apk-teste) → `aqua-caos.apk`
-- ou aba **Actions** → *Build APK Android* → artefato `aqua-caos-apk`
+- Ou na aba **Actions** → *Build APK Android* → artefato `aqua-caos-apk`
 
-Detalhes em [docs/APK_GITHUB_ACTIONS.md](docs/APK_GITHUB_ACTIONS.md).
+Mais informações em [docs/APK_GITHUB_ACTIONS.md](docs/APK_GITHUB_ACTIONS.md).
 
 ## Abrir no Godot (Android)
 

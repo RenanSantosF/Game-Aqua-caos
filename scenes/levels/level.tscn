@@ -1,0 +1,36 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scenes/levels/level.gd" id="1_level"]
+[ext_resource type="Script" path="res://scripts/world/world_decor.gd" id="2_decor"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://scenes/player/follow_camera.gd" id="4_camera"]
+[ext_resource type="PackedScene" path="res://scenes/ui/touch_controls.tscn" id="5_touch"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/result_screen.tscn" id="7_result"]
+
+[node name="Level" type="Node3D"]
+script = ExtResource("1_level")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.6, 0.8, 0, -0.8, 0.6, 0, 20, 0)
+
+[node name="Course" type="Node3D" parent="."]
+
+[node name="Decor" type="Node3D" parent="."]
+script = ExtResource("2_decor")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+
+[node name="FollowCamera" type="Camera3D" parent="."]
+fov = 65.0
+far = 400.0
+script = ExtResource("4_camera")
+target_path = NodePath("../Player")
+
+[node name="TouchControls" parent="." instance=ExtResource("5_touch")]
+
+[node name="HUD" parent="." instance=ExtResource("6_hud")]
+
+[node name="ResultScreen" parent="." instance=ExtResource("7_result")]

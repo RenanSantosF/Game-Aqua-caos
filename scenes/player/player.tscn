@@ -1,35 +1,43 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/player/player.gd" id="1_player"]
-[ext_resource type="Script" path="res://scenes/player/player_visual.gd" id="2_visual"]
+[ext_resource type="Script" path="res://scenes/player/character_model.gd" id="2_model"]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
-radius = 20.0
-height = 80.0
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.4
+height = 1.5
 
-[node name="Player" type="CharacterBody2D"]
-z_index = 5
+[sub_resource type="CylinderMesh" id="CylinderMesh_shadow"]
+top_radius = 0.5
+bottom_radius = 0.5
+height = 0.01
+radial_segments = 20
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shadow"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0, 0.05, 0.15, 0.35)
+
+[node name="Player" type="CharacterBody3D"]
 collision_layer = 2
 collision_mask = 1
-floor_max_angle = 0.959931
-floor_snap_length = 14.0
+floor_max_angle = 0.872665
+floor_snap_length = 0.3
 script = ExtResource("1_player")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -40)
-shape = SubResource("CapsuleShape2D_body")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+shape = SubResource("CapsuleShape3D_body")
 
-[node name="Visual" type="Node2D" parent="."]
-position = Vector2(0, -42)
-script = ExtResource("2_visual")
+[node name="Model" type="Node3D" parent="."]
+script = ExtResource("2_model")
 
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(0, -90)
-limit_left = 0
-limit_top = -400
-limit_bottom = 820
-position_smoothing_enabled = true
-position_smoothing_speed = 6.0
-drag_vertical_enabled = true
-drag_top_margin = 0.3
-drag_bottom_margin = 0.1
+[node name="BlobShadow" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_shadow")
+surface_material_override/0 = SubResource("StandardMaterial3D_shadow")
+
+[node name="ShadowRay" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+target_position = Vector3(0, -30, 0)

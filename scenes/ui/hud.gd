@@ -1,11 +1,14 @@
 extends CanvasLayer
-## HUD da corrida: cronômetro, quedas, contagem regressiva, avisos e pausa.
+## HUD da corrida: fase, cronômetro, moedas, progresso, contagem, avisos e pausa.
 
 signal restart_requested
 signal menu_requested
 
 @onready var _time_label: Label = %TimeLabel
-@onready var _falls_label: Label = %FallsLabel
+@onready var _coins_label: Label = %CoinsLabel
+@onready var _level_label: Label = %LevelLabel
+@onready var _progress: ProgressBar = %Progress
+@onready var _rank_label: Label = %RankLabel
 @onready var _countdown: Label = %Countdown
 @onready var _toast: Label = %Toast
 @onready var _pause_button: Button = %PauseButton
@@ -35,12 +38,28 @@ func _unhandled_input(event: InputEvent) -> void:
 		set_paused(not get_tree().paused)
 
 
+func set_level(level: int, level_name: String, theme_name: String) -> void:
+	_level_label.text = "FASE %d · %s\n%s" % [level, level_name.to_upper(), theme_name]
+
+
 func set_time(seconds: float) -> void:
 	_time_label.text = Game.format_time(seconds)
 
 
-func set_falls(count: int) -> void:
-	_falls_label.text = "QUEDAS: %d" % count
+func set_coins(count: int) -> void:
+	_coins_label.text = str(count)
+	_pop(_coins_label.get_parent())
+
+
+func set_rank(rank: int, total: int) -> void:
+	var text := "%dº/%d" % [rank, total]
+	if _rank_label.text != text:
+		_rank_label.text = text
+		_rank_label.add_theme_color_override("font_color", Color("ffd54f") if rank == 1 else Color.WHITE)
+
+
+func set_progress(value: float) -> void:
+	_progress.value = clampf(value, 0.0, 1.0) * 100.0
 
 
 func show_countdown(text: String) -> void:
@@ -57,10 +76,11 @@ func show_countdown(text: String) -> void:
 		tween.tween_callback(_countdown.hide)
 
 
-func toast(text: String) -> void:
+func toast(text: String, color := Color("b3ff59")) -> void:
 	if _toast_tween:
 		_toast_tween.kill()
 	_toast.text = text
+	_toast.add_theme_color_override("font_color", color)
 	_toast.show()
 	_toast.modulate.a = 1.0
 	_toast.pivot_offset = _toast.size * 0.5
@@ -79,6 +99,14 @@ func set_race_finished() -> void:
 func set_paused(paused: bool) -> void:
 	get_tree().paused = paused
 	_pause_menu.visible = paused
+	Sfx.play("click")
+
+
+func _pop(control: Control) -> void:
+	control.pivot_offset = control.size * 0.5
+	var tween := create_tween()
+	tween.tween_property(control, "scale", Vector2(1.15, 1.15), 0.06)
+	tween.tween_property(control, "scale", Vector2.ONE, 0.12)
 
 
 func _on_restart() -> void:

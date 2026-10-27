@@ -3,9 +3,8 @@
 Objetivo: ter o projeto aberto no **Godot 4.3 para Android**, rodando em tela
 horizontal 16:9, com a estrutura de pastas pronta para as próximas etapas.
 
-> **Atualização:** a cena de teste desta etapa foi substituída pela tela
-> inicial do jogo (Etapas 2–7). As configurações de tela continuam as
-> mesmas. Veja [ETAPAS_02_A_07.md](ETAPAS_02_A_07.md).
+> **Atualização:** o jogo agora é 3D. As instruções de instalação e
+> importação abaixo continuam valendo. Veja [JOGO_3D.md](JOGO_3D.md).
 
 ---
 

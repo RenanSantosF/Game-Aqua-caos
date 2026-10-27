@@ -1,0 +1,285 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/menu/menu.gd" id="1_menu"]
+[ext_resource type="Script" path="res://scripts/world/world_decor.gd" id="2_decor"]
+[ext_resource type="Script" path="res://scenes/player/character_model.gd" id="3_model"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ribbon"]
+content_margin_left = 26.0
+content_margin_top = 2.0
+content_margin_right = 26.0
+content_margin_bottom = 6.0
+bg_color = Color(0.0823529, 0.396078, 0.752941, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_coin"]
+bg_color = Color(1, 0.756863, 0.027451, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.101961, 0.137255, 0.25098, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[node name="Menu" type="Node3D"]
+script = ExtResource("1_menu")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+
+[node name="Decor" type="Node3D" parent="."]
+script = ExtResource("2_decor")
+
+[node name="Podium" type="Node3D" parent="."]
+
+[node name="Hero" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+script = ExtResource("3_model")
+demo_mode = true
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 8.5)
+fov = 55.0
+far = 400.0
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Root" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Logo" type="VBoxContainer" parent="UI/Root"]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 20.0
+offset_right = 460.0
+offset_bottom = 300.0
+mouse_filter = 2
+theme_override_constants/separation = -18
+
+[node name="Aqua" type="Label" parent="UI/Root/Logo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.501961, 0.870588, 1, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.211765, 0.47451, 1)
+theme_override_constants/outline_size = 24
+theme_override_font_sizes/font_size = 104
+text = "AQUA"
+horizontal_alignment = 1
+
+[node name="Caos" type="Label" parent="UI/Root/Logo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.596078, 0, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.211765, 0.47451, 1)
+theme_override_constants/outline_size = 24
+theme_override_font_sizes/font_size = 124
+text = "CAOS"
+horizontal_alignment = 1
+
+[node name="Ribbon" type="PanelContainer" parent="UI/Root/Logo"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_ribbon")
+
+[node name="Subtitle" type="Label" parent="UI/Root/Logo/Ribbon"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "DESAFIO MOLHADO"
+horizontal_alignment = 1
+
+[node name="TopRight" type="HBoxContainer" parent="UI/Root"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -420.0
+offset_top = 16.0
+offset_right = -20.0
+offset_bottom = 82.0
+grow_horizontal = 0
+theme_override_constants/separation = 14
+alignment = 2
+
+[node name="CoinsPanel" type="PanelContainer" parent="UI/Root/TopRight"]
+layout_mode = 2
+theme_type_variation = &"HudPanel"
+
+[node name="HBox" type="HBoxContainer" parent="UI/Root/TopRight/CoinsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CoinIcon" type="Panel" parent="UI/Root/TopRight/CoinsPanel/HBox"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_coin")
+
+[node name="CoinsLabel" type="Label" parent="UI/Root/TopRight/CoinsPanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "0"
+
+[node name="SoundButton" type="Button" parent="UI/Root/TopRight"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 24
+text = "SOM: SIM"
+
+[node name="PlayPanel" type="PanelContainer" parent="UI/Root"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -500.0
+offset_top = -330.0
+offset_right = -40.0
+offset_bottom = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="VBox" type="VBoxContainer" parent="UI/Root/PlayPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Next" type="Label" parent="UI/Root/PlayPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "PRÓXIMA FASE"
+horizontal_alignment = 1
+
+[node name="NextLevelName" type="Label" parent="UI/Root/PlayPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843137, 0.25098, 1)
+theme_override_font_sizes/font_size = 32
+text = "PARQUE AQUÁTICO"
+horizontal_alignment = 1
+
+[node name="PlayButton" type="Button" parent="UI/Root/PlayPanel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 46
+text = "JOGAR  FASE 1"
+
+[node name="LevelsButton" type="Button" parent="UI/Root/PlayPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "ESCOLHER FASE"
+
+[node name="StarsLabel" type="Label" parent="UI/Root/PlayPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "0 estrelas"
+horizontal_alignment = 1
+
+[node name="Tagline" type="Label" parent="UI/Root"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = -80.0
+offset_right = 700.0
+offset_bottom = -30.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "Corra, pule, mergulhe e chegue primeiro!"
+
+[node name="LevelSelect" type="Control" parent="UI/Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="UI/Root/LevelSelect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0.0392157, 0.12549, 0.6)
+
+[node name="Center" type="CenterContainer" parent="UI/Root/LevelSelect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="UI/Root/LevelSelect/Center"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="UI/Root/LevelSelect/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="UI/Root/LevelSelect/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="PrevButton" type="Button" parent="UI/Root/LevelSelect/Center/Panel/VBox/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+focus_mode = 0
+text = "<"
+
+[node name="PageLabel" type="Label" parent="UI/Root/LevelSelect/Center/Panel/VBox/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "FASES 1 – 20"
+horizontal_alignment = 1
+
+[node name="NextButton" type="Button" parent="UI/Root/LevelSelect/Center/Panel/VBox/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+focus_mode = 0
+text = ">"
+
+[node name="Grid" type="GridContainer" parent="UI/Root/LevelSelect/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 5
+
+[node name="CloseButton" type="Button" parent="UI/Root/LevelSelect/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+text = "VOLTAR"

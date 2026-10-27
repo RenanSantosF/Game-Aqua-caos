@@ -1,13 +1,12 @@
 extends CanvasLayer
-## Posiciona os botões de toque nos cantos da tela, qualquer que seja a
-## proporção do celular. Some em aparelhos sem tela de toque (ex.: PC).
+## Controles de toque: joystick à esquerda, PULAR e MERGULHAR à direita.
+## Some em aparelhos sem tela de toque (no PC use WASD, Espaço e Shift).
 
-## Mostra os botões mesmo sem tela de toque (útil para testar no PC).
 @export var always_visible := false
 
-@onready var _left: Node2D = $Left
-@onready var _right: Node2D = $Right
+@onready var _joystick: Node2D = $Joystick
 @onready var _jump: Node2D = $Jump
+@onready var _dive: Node2D = $Dive
 
 
 func _ready() -> void:
@@ -18,13 +17,13 @@ func _ready() -> void:
 
 func _layout() -> void:
 	var screen := get_viewport().get_visible_rect().size
-	_left.position = Vector2(115, screen.y - 110)
-	_right.position = Vector2(290, screen.y - 110)
-	_jump.position = Vector2(screen.x - 130, screen.y - 120)
+	_jump.position = Vector2(screen.x - 140, screen.y - 150)
+	_dive.position = Vector2(screen.x - 310, screen.y - 95)
 
 
 func set_enabled(enabled: bool) -> void:
 	visible = enabled and (always_visible or DisplayServer.is_touchscreen_available())
 	if not enabled:
-		for action in ["move_left", "move_right", "jump"]:
+		_joystick.release()
+		for action in ["jump", "dive"]:
 			Input.action_release(action)
