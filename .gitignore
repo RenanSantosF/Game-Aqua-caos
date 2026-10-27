@@ -1,0 +1,11 @@
+# Godot 4
+.godot/
+/android/
+*.tmp
+
+# Exportações e chaves (NUNCA envie a keystore para o GitHub)
+/export/
+*.apk
+*.aab
+*.keystore
+*.jks

@@ -1,0 +1,9 @@
+# Normaliza finais de linha (evita conflitos entre editores)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ogg binary
+*.wav binary
+*.mp3 binary
+*.ttf binary
+*.otf binary
