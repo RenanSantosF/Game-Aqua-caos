@@ -47,4 +47,4 @@ func _draw() -> void:
 				])
 				draw_polyline(chevron, white, r * 0.13, true)
 	if label != "":
-		draw_string(FONT, Vector2(-r, r + 30), label, HORIZONTAL_ALIGNMENT_CENTER, r * 2.0, 24, Color.WHITE)
+		draw_string(FONT, Vector2(-r, r + 30), tr(label), HORIZONTAL_ALIGNMENT_CENTER, r * 2.0, 24, Color.WHITE)

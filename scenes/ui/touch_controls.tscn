@@ -15,13 +15,5 @@ script = ExtResource("2_joystick")
 position = Vector2(1140, 570)
 action = "jump"
 script = ExtResource("3_button")
-label = "PULAR"
-
-[node name="Dive" type="TouchScreenButton" parent="."]
-position = Vector2(970, 625)
-action = "dive"
-script = ExtResource("3_button")
-icon = 1
-radius = 62.0
-label = "MERGULHO"
-color = Color(0.75, 0.25, 0.1, 1)
+label = "BTN_JUMP"
+radius = 92.0

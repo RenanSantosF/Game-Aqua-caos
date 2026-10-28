@@ -8,17 +8,26 @@ Corra, pule, mergulhe e chegue primeiro!
 ## Destaques
 
 - Boneco cartoon 3D com animações exageradas e física divertida.
-- **Fases infinitas** geradas pelo número da fase, com dificuldade crescente.
-- 12 tipos de trecho:
-  - martelos, bastões giratórios, piso que cai e paredes que dão soco;
-  - bolas gigantes, gêiseres e esteiras;
-  - boias trampolim, discos giratórios e escorregadores;
-  - plataformas móveis e pulos entre plataformas.
+- **Fases infinitas** geradas por algoritmo a partir do número da fase.
+  Cada fase é um percurso real e diferente, com curvas, descidas e
+  tobogãs.
+- 20 tipos de trecho: martelos, troncos rolantes, ventiladores, rampa de
+  salto, tambor giratório, elevadores, tobogã em zigue-zague e muito mais.
 - Rivais controlados pelo computador e posição ao vivo.
-- 5 ambientações e um mundo vivo: ilhas, golfinhos, gaivotas e torcida.
-- Moedas, estrelas, recordes e progresso salvos no aparelho (offline).
+- Mapa com caminho percorrido entre as fases.
+- Loja com skins e acessórios: por moedas, grátis por anúncio (3 dias) ou
+  exclusivas.
+- Presente diário, moedas, estrelas e recordes salvos no aparelho
+  (offline).
+- Músicas infantis, vinhetas de vitória e sons suaves.
+- Idiomas: português, inglês e espanhol (segue o idioma do celular).
+- Câmera que gira arrastando o dedo.
 
-Detalhes, controles e como ajustar: [docs/JOGO_3D.md](docs/JOGO_3D.md).
+Para entender como tudo funciona, veja:
+
+- jogo, controles e como ajustar: [docs/JOGO_3D.md](docs/JOGO_3D.md);
+- anúncios e compras (hoje em **modo de teste**):
+  [docs/MONETIZACAO.md](docs/MONETIZACAO.md).
 
 ## Baixar o APK (jogar no celular)
 

@@ -42,7 +42,7 @@ func _physics_process(delta: float) -> void:
 	if _extension > previous + 0.01:
 		for body in _area.get_overlapping_bodies():
 			if body is Player:
-				(body as Player).knockback(Vector3(direction * push, 5.0, 0.0))
+				(body as Player).knockback(global_transform.basis * Vector3(direction * push, 5.0, 0.0))
 
 
 func _update(t: float) -> void:
@@ -57,3 +57,9 @@ func _update(t: float) -> void:
 	else:
 		_extension = 1.0 - (k - 0.68) / 0.32
 	_block.position = Vector3(direction * (-0.6 + _extension * reach), 0.9, 0)
+
+
+## Perigoso agora ou prestes a socar (os rivais esperam).
+func is_dangerous() -> bool:
+	var k := fposmod(_time + time_offset, period) / period
+	return (k > 0.36 and k < 0.72) or _extension > 0.05

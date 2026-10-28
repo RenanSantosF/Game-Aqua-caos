@@ -39,7 +39,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func set_level(level: int, level_name: String, theme_name: String) -> void:
-	_level_label.text = "FASE %d · %s\n%s" % [level, level_name.to_upper(), theme_name]
+	_level_label.text = tr("HUD_LEVEL") % [level, level_name.to_upper()] + "\n" + theme_name
 
 
 func set_time(seconds: float) -> void:
@@ -90,6 +90,10 @@ func toast(text: String, color := Color("b3ff59")) -> void:
 	_toast_tween.tween_interval(1.0)
 	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.4)
 	_toast_tween.tween_callback(_toast.hide)
+
+
+func hint(text: String) -> void:
+	toast(text, Color("ffffff"))
 
 
 func set_race_finished() -> void:

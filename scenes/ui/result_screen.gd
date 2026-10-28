@@ -5,6 +5,8 @@ signal next_requested
 signal retry_requested
 signal menu_requested
 
+var _result: Dictionary = {}
+
 @onready var _root: Control = $Root
 @onready var _panel: Control = %Panel
 @onready var _stars: Array[Control] = [%Star1, %Star2, %Star3]
@@ -15,23 +17,27 @@ func _ready() -> void:
 	%NextButton.pressed.connect(func(): Sfx.play("click"); next_requested.emit())
 	%RetryButton.pressed.connect(func(): Sfx.play("click"); retry_requested.emit())
 	%MenuButton.pressed.connect(func(): Sfx.play("click"); menu_requested.emit())
+	%DoubleButton.pressed.connect(_on_double)
 
 
 func show_result(level: int, level_name: String, time: float, falls: int, place: int, racers: int, result: Dictionary) -> void:
-	%LevelLabel.text = "FASE %d · %s" % [level, level_name.to_upper()]
-	%Title.text = "%dº LUGAR!" % place if place <= 3 else "CHEGOU!"
-	%PlaceLabel.text = "Você chegou em %dº de %d" % [place, racers]
-	%TimeLabel.text = "TEMPO: %s" % Game.format_time(time)
-	%BestLabel.text = "RECORDE: %s" % Game.format_time(result.get("best_time", INF))
+	_result = result
+	%LevelLabel.text = tr("HUD_LEVEL") % [level, level_name.to_upper()]
+	%Title.text = tr("RESULT_PLACE") % Themes.ordinal(place) if place <= 3 else tr("RESULT_FINISHED")
+	%PlaceLabel.text = tr("RESULT_YOU_PLACED") % [Themes.ordinal(place), racers]
+	%TimeLabel.text = tr("RESULT_TIME") % Game.format_time(time)
+	%BestLabel.text = tr("RESULT_BEST") % Game.format_time(result.get("best_time", INF))
 	%NewRecordLabel.visible = result.get("new_record", false)
-	%FallsLabel.text = "QUEDAS NA ÁGUA: %d" % falls
-	var lines := "Moedas coletadas: %d\nChegada: +%d" % [result.coins_collected, result.finish_bonus]
+	%FallsLabel.text = tr("RESULT_FALLS") % falls
+	var lines := tr("RESULT_COINS_COLLECTED") % result.coins_collected
+	lines += "\n" + tr("RESULT_FINISH_BONUS") % result.finish_bonus
 	if result.no_fall_bonus > 0:
-		lines += "\nSem cair: +%d" % result.no_fall_bonus
+		lines += "\n" + tr("RESULT_NO_FALL_BONUS") % result.no_fall_bonus
 	if result.place_bonus > 0:
-		lines += "\n%dº lugar: +%d" % [place, result.place_bonus]
+		lines += "\n" + tr("RESULT_PLACE_BONUS") % [Themes.ordinal(place), result.place_bonus]
 	%CoinsDetail.text = lines
-	%CoinsTotal.text = "+%d MOEDAS" % result.coins_total
+	%CoinsTotal.text = tr("RESULT_TOTAL") % result.coins_total
+	%DoubleButton.visible = true
 
 	var earned: int = result.stars
 	for i in 3:
@@ -53,3 +59,16 @@ func show_result(level: int, level_name: String, time: float, falls: int, place:
 		star.pivot_offset = star.size * 0.5
 		tween.chain().tween_callback(func(): star.modulate = Color("ffd54f"); star.scale = Vector2(1.8, 1.8); Sfx.play("coin", 0.0, 0.0))
 		tween.chain().tween_property(star, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+## Anúncio recompensado opcional: dobra as moedas ganhas na fase.
+func _on_double() -> void:
+	%DoubleButton.disabled = true
+	if await Monetization.show_rewarded():
+		var extra: int = _result.get("coins_total", 0)
+		Game.add_coins(extra)
+		%CoinsTotal.text = tr("RESULT_TOTAL") % (extra * 2)
+		Sfx.play("unlock")
+		%DoubleButton.visible = false
+	else:
+		%DoubleButton.disabled = false

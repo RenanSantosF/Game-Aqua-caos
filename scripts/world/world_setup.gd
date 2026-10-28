@@ -28,15 +28,21 @@ static func apply_environment(world_environment: WorldEnvironment, sun: Directio
 	sun.light_energy = theme.sun_energy
 	sun.rotation_degrees = Vector3(theme.sun_pitch, theme.sun_yaw, 0)
 	sun.shadow_enabled = true
+	# Sombras nítidas perto da câmera: distância curta = mais detalhe.
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
-	sun.directional_shadow_max_distance = 45.0
+	sun.directional_shadow_max_distance = 32.0
+	sun.directional_shadow_split_1 = 0.25
+	sun.shadow_blur = 1.4
+	sun.shadow_bias = 0.04
+	sun.shadow_normal_bias = 1.2
 
 
-static func add_water(parent: Node3D, theme: Dictionary, center_z: float, length: float, width := 320.0) -> MeshInstance3D:
+static func add_water(parent: Node3D, theme: Dictionary, center: Vector3, size: Vector2) -> MeshInstance3D:
 	var plane := PlaneMesh.new()
-	plane.size = Vector2(width, length)
-	plane.subdivide_width = int(width / 5.0)
-	plane.subdivide_depth = int(length / 5.0)
+	plane.size = size
+	# Ondas precisam de vértices; limitado para não pesar no celular.
+	plane.subdivide_width = clampi(int(size.x / 5.0), 8, 90)
+	plane.subdivide_depth = clampi(int(size.y / 5.0), 8, 110)
 	var material := ShaderMaterial.new()
 	material.shader = WATER_SHADER
 	material.set_shader_parameter("deep_color", theme.water_deep)
@@ -45,6 +51,6 @@ static func add_water(parent: Node3D, theme: Dictionary, center_z: float, length
 	water.mesh = plane
 	water.material_override = material
 	water.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	water.position = Vector3(0, WATER_Y, center_z)
+	water.position = Vector3(center.x, WATER_Y, center.z)
 	parent.add_child(water)
 	return water

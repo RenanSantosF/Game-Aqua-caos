@@ -28,7 +28,7 @@ func _ready() -> void:
 		_checker_column(Vector3(side * (width * 0.5 + 0.4), 0, 0), 5.5)
 	_checker_beam(Vector3(0, 5.5, 0), width + 1.6)
 	var label := Label3D.new()
-	label.text = "CHEGADA"
+	label.text = "SIGN_FINISH"
 	label.font = FONT
 	label.font_size = 120
 	label.outline_size = 24

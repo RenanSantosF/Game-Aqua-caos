@@ -49,14 +49,16 @@ func _physics_process(delta: float) -> void:
 	var head_position := _head.global_position
 	var head_velocity := (head_position - _previous) / delta
 	_previous = head_position
+	var side := global_transform.basis.x
 	for body in _head.get_overlapping_bodies():
 		if body is Player:
-			var direction := signf(head_velocity.x)
-			if absf(head_velocity.x) < 1.0:
-				direction = signf(body.global_position.x - head_position.x)
+			var along := head_velocity.dot(side)
+			var direction := signf(along)
+			if absf(along) < 1.0:
+				direction = signf((body.global_position - head_position).dot(side))
 			if direction == 0.0:
 				direction = 1.0
-			(body as Player).knockback(Vector3(direction * push, 6.0, 0.0))
+			(body as Player).knockback(side * direction * push + Vector3.UP * 6.0)
 
 
 func _update_angle() -> void:

@@ -19,8 +19,6 @@ enum State { NORMAL, DIVING, KNOCKED, GETTING_UP, IN_WATER, FROZEN, FINISHED }
 
 @export_group("Pulo")
 @export var jump_velocity := 9.5
-## Multiplica a subida quando o botão é solto cedo (pulo curto).
-@export var jump_cut := 0.5
 @export var fall_gravity_scale := 1.5
 @export var max_fall_speed := 30.0
 @export var coyote_time := 0.12
@@ -48,7 +46,10 @@ const SPLASH := preload("res://scripts/world/splash.gd")
 
 var state := State.NORMAL
 var respawn_point := Vector3.ZERO
+var respawn_yaw := 0.0
 var facing_angle := 0.0
+## Direção da câmera (o direcional é relativo a ela). Usado só pelo jogador.
+var camera_yaw := 0.0
 var coins := 0
 var invulnerable := false
 ## false nos rivais controlados pelo computador.
@@ -66,6 +67,11 @@ var _state_timer := 0.0
 var _invulnerable_timer := 0.0
 var _was_on_floor := true
 var _fall_speed := 0.0
+## Lançado por rampa/boia: mantém o embalo no ar até pousar.
+var _launched := false
+var _wind := Vector3.ZERO
+## Vento sentido no último quadro (os rivais usam para compensar).
+var wind_felt := Vector3.ZERO
 
 @onready var model: CharacterModel = $Model
 @onready var _shadow: MeshInstance3D = $BlobShadow
@@ -141,9 +147,40 @@ func launch(up_velocity: float, max_horizontal := 9.0) -> void:
 	velocity = Vector3(flat.x, up_velocity, flat.y)
 	_jumping = false
 	_can_dive = true
+	_launched = true
 	_coyote = 0.0
 	model.on_jump()
 	_sfx("bounce")
+
+
+## Lançamento para a frente (rampa de salto).
+func launch_toward(horizontal: Vector3, up_velocity: float) -> void:
+	if state not in [State.NORMAL, State.DIVING, State.GETTING_UP]:
+		return
+	state = State.NORMAL
+	velocity = Vector3(horizontal.x, up_velocity, horizontal.z)
+	facing_angle = atan2(-horizontal.x, -horizontal.z)
+	_jumping = false
+	_can_dive = true
+	_launched = true
+	model.on_jump()
+	_sfx("bounce")
+
+
+## Vento dos ventiladores (chamado a cada quadro enquanto sopra).
+func apply_wind(push: Vector3, _delta: float) -> void:
+	if state in [State.NORMAL, State.DIVING, State.KNOCKED, State.GETTING_UP]:
+		_wind = push
+
+
+## Proteção temporária contra empurrões (pisca).
+func protect(duration: float) -> void:
+	_start_invulnerability(duration)
+
+
+func set_respawn(point: Vector3, yaw: float) -> void:
+	respawn_point = point
+	respawn_yaw = yaw
 
 
 func enter_water() -> void:
@@ -170,8 +207,8 @@ func collect_coin() -> void:
 func respawn() -> void:
 	global_position = respawn_point
 	velocity = Vector3.ZERO
-	facing_angle = 0.0
-	model.rotation.y = 0.0
+	facing_angle = respawn_yaw
+	model.rotation.y = respawn_yaw
 	state = State.NORMAL
 	_start_invulnerability(invulnerable_time)
 	model.on_respawn()
@@ -196,19 +233,20 @@ func _input_direction() -> Vector3:
 	if brain != null:
 		return brain.move
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back", 0.12)
-	return Vector3(input.x, 0.0, input.y)
+	return Vector3(input.x, 0.0, input.y).rotated(Vector3.UP, camera_yaw)
 
 
 func _jump_pressed() -> bool:
-	return brain.jump_pressed if brain != null else Input.is_action_just_pressed("jump")
+	if brain != null:
+		return brain.jump_pressed
+	return Input.is_action_just_pressed("jump")
 
 
-func _jump_held() -> bool:
-	return brain.jump_held if brain != null else Input.is_action_pressed("jump")
-
-
-func _dive_pressed() -> bool:
-	return brain.dive_pressed if brain != null else Input.is_action_just_pressed("dive")
+## Altura até o chão logo abaixo (usa o raio da sombra).
+func _height_above_ground() -> float:
+	if not _shadow_ray.is_colliding():
+		return 99.0
+	return global_position.y - _shadow_ray.get_collision_point().y
 
 
 func _sfx(sound: String, volume_db := 0.0, pitch_variation := 0.06) -> void:
@@ -225,17 +263,24 @@ func _process_normal(delta: float) -> void:
 		_coyote = coyote_time
 		_jumping = false
 		_can_dive = true
+		_launched = false
 	else:
 		_coyote -= delta
+	var dive_now := false
 	if _jump_pressed():
-		_jump_buffer = jump_buffer_time
+		# Segundo toque no ar (longe do chão) = mergulho. Perto do chão,
+		# o toque fica guardado e vira um pulo ao pousar.
+		if not on_floor and _coyote <= 0.0 and _can_dive and _height_above_ground() > 0.7:
+			dive_now = true
+		else:
+			_jump_buffer = jump_buffer_time
 	else:
 		_jump_buffer -= delta
 
 	_apply_gravity(delta)
 
 	var accel := air_accel
-	var friction := air_accel * 0.4
+	var friction := 0.0 if _launched else air_accel * 0.4
 	if on_floor:
 		accel = slippery_accel if slippery else ground_accel
 		friction = slippery_friction if slippery else ground_friction
@@ -243,7 +288,7 @@ func _process_normal(delta: float) -> void:
 	var flat := Vector2(velocity.x, velocity.z)
 	var target := Vector2(direction.x, direction.z) * run_speed
 	if direction.length() > 0.05:
-		var keep_momentum := flat.length() > (target.length() if slippery else run_speed)
+		var keep_momentum := flat.length() > (target.length() if slippery or _launched else run_speed)
 		if not keep_momentum or flat.dot(target) < 0.0:
 			flat = flat.move_toward(target, accel * delta)
 		else:
@@ -276,11 +321,7 @@ func _process_normal(delta: float) -> void:
 		model.on_jump()
 		_sfx("jump", -4.0)
 
-	if _jumping and velocity.y > 0.0 and not _jump_held():
-		velocity.y *= jump_cut
-		_jumping = false
-
-	if _dive_pressed() and _can_dive:
+	if dive_now:
 		_start_dive()
 
 	_move_with_belt()
@@ -384,11 +425,13 @@ func _floor_node() -> Node:
 func _move_with_belt() -> void:
 	var floor_node := _floor_node()
 	var belt := Vector3.ZERO
-	if floor_node is Conveyor:
-		belt = (floor_node as Conveyor).belt_velocity()
-	velocity += belt
+	if floor_node != null and floor_node.has_method("belt_velocity"):
+		belt = floor_node.belt_velocity()
+	velocity += belt + _wind
 	move_and_slide()
-	velocity -= belt
+	velocity -= belt + _wind
+	wind_felt = _wind
+	_wind = Vector3.ZERO
 
 
 func _start_invulnerability(duration: float) -> void:

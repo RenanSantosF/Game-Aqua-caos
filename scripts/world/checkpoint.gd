@@ -37,14 +37,17 @@ func _on_body_entered(body: Node3D) -> void:
 	var player := body as Player
 	if not player.is_human:
 		# Rivais também renascem aqui, mas sem festa.
-		if player.respawn_point.z > global_position.z:
-			player.respawn_point = global_position + Vector3(0, 0.2, -1.0)
+		player.set_respawn(_respawn_spot(), global_rotation.y)
 		return
 	if active:
 		return
 	active = true
-	(body as Player).respawn_point = global_position + Vector3(0, 0.2, -1.0)
+	player.set_respawn(_respawn_spot(), global_rotation.y)
 	for flag in _flags:
 		flag.material_override = Mat.toon(Color("43a047"), true)
 	Sfx.play("checkpoint")
 	activated.emit()
+
+
+func _respawn_spot() -> Vector3:
+	return global_transform * Vector3(0, 0.2, -1.0)

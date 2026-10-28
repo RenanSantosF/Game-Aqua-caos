@@ -32,6 +32,8 @@ var falls := 0
 
 var _theme: Dictionary
 var _builder: CourseBuilder
+var _player_tracker: PathTracker
+var _bot_trackers: Array[PathTracker] = []
 
 
 func _ready() -> void:
@@ -40,11 +42,14 @@ func _ready() -> void:
 	_setup_environment()
 	_builder = CourseBuilder.new()
 	info = _builder.build(course, level, _theme)
-	decor.build(_theme, 10.0, info.end_z, level)
+	decor.build(_theme, _builder.waypoints, Transform3D.IDENTITY, _builder.finish_gate.global_transform, level)
 	_setup_water()
+	_player_tracker = PathTracker.new(_builder.waypoints)
 
+	player.model.set_colors(Game.equipped_colors())
 	player.global_position = info.spawn
-	player.respawn_point = info.spawn
+	player.set_respawn(info.spawn, 0.0)
+	camera.path_yaw = 0.0
 	camera.snap()
 
 	_spawn_rivals()
@@ -54,14 +59,15 @@ func _ready() -> void:
 	_builder.finish_gate.crossed.connect(_on_finish)
 	_builder.finish_gate.bot_finished.connect(_on_bot_finished)
 	for checkpoint in _builder.checkpoints:
-		checkpoint.activated.connect(hud.toast.bind("CHECKPOINT!"))
+		checkpoint.activated.connect(hud.toast.bind(tr("HUD_CHECKPOINT")))
 	hud.restart_requested.connect(restart)
-	hud.menu_requested.connect(Game.go_to_menu)
+	hud.menu_requested.connect(Game.go_to_map)
 	result_screen.next_requested.connect(Game.play_next_level)
-	result_screen.retry_requested.connect(restart)
-	result_screen.menu_requested.connect(Game.go_to_menu)
+	result_screen.retry_requested.connect(func(): Game.continue_after_level(Game.LEVEL_SCENE))
+	result_screen.menu_requested.connect(func(): Game.continue_after_level(Game.MAP_SCENE))
 
-	hud.set_level(level, Themes.level_name(level), _theme.name)
+	hud.set_level(level, Themes.level_name(level), tr(_theme.name))
+	Music.play("race" if level % 2 == 1 else "race2")
 	hud.set_time(0.0)
 	hud.set_coins(0)
 	_start_countdown()
@@ -71,15 +77,20 @@ func _process(delta: float) -> void:
 	if running:
 		elapsed += delta
 		hud.set_time(elapsed)
-	hud.set_progress(player.global_position.z / info.finish_z)
+	var progress := _player_tracker.update(player.global_position)
+	hud.set_progress(progress)
+	# A câmera segue a direção do percurso onde o jogador está.
+	var target_yaw := PathTracker.yaw_of(_player_tracker.heading())
+	camera.path_yaw = lerp_angle(camera.path_yaw, target_yaw, minf(1.0, 2.5 * delta))
 	if running:
-		hud.set_rank(_current_rank(), bots.size() + 1)
+		hud.set_rank(_current_rank(progress), bots.size() + 1)
 
 
-func _current_rank() -> int:
+func _current_rank(progress: float) -> int:
 	var ahead := bots_finished
-	for bot in bots:
-		if bot.state != Player.State.FINISHED and bot.global_position.z < player.global_position.z:
+	for i in bots.size():
+		var bot := bots[i]
+		if bot.state != Player.State.FINISHED and _bot_trackers[i].update(bot.global_position) > progress:
 			ahead += 1
 	return ahead + 1
 
@@ -99,8 +110,9 @@ func _spawn_rivals() -> void:
 		var slots := [Vector3(-2.4, 0, 0.6), Vector3(2.4, 0, 0.6), Vector3(-4.6, 0, 1.0), Vector3(4.6, 0, 1.0), Vector3(0, 0, 1.4)]
 		bot.position = info.spawn + slots[i]
 		add_child(bot)
-		bot.respawn_point = bot.position
+		bot.set_respawn(bot.position, 0.0)
 		bot.model.set_colors(data)
+		_bot_trackers.append(PathTracker.new(_builder.waypoints))
 		var tag := Label3D.new()
 		tag.text = data.name
 		tag.font = FONT
@@ -126,22 +138,26 @@ func _start_countdown() -> void:
 	player.set_frozen(true)
 	for bot in bots:
 		bot.set_frozen(true)
+	await get_tree().create_timer(0.6, false).timeout
 	for text in ["3", "2", "1"]:
 		hud.show_countdown(text)
 		Sfx.play("beep", 0.0, 0.0)
 		await get_tree().create_timer(0.7, false).timeout
-	hud.show_countdown("JÁ!")
+	hud.show_countdown(tr("HUD_GO"))
 	Sfx.play("go", 0.0, 0.0)
 	player.set_frozen(false)
 	for bot in bots:
 		bot.set_frozen(false)
 	running = true
+	if level <= 2:
+		await get_tree().create_timer(2.5, false).timeout
+		hud.hint(tr("HUD_HINT_DIVE"))
 
 
 func _on_player_fell() -> void:
 	falls += 1
 	camera.shake(0.4)
-	hud.toast("SPLASH!", Color("80d8ff"))
+	hud.toast(tr("HUD_SPLASH"), Color("80d8ff"))
 
 
 func _on_finish(_body: Node3D) -> void:
@@ -149,11 +165,11 @@ func _on_finish(_body: Node3D) -> void:
 	player.finish()
 	touch_controls.set_enabled(false)
 	hud.set_race_finished()
-	Sfx.play("win", 0.0, 0.0)
 	# A câmera dá a volta para ver o boneco comemorando.
-	camera.offset = Vector3(0, 2.4, -6.5)
-	camera.look_ahead = Vector3(0, 1.0, 0)
+	camera.celebrating = true
+	player.facing_angle = camera.path_yaw + PI
 	var place := bots_finished + 1
+	Music.play_jingle("victory" if place <= 3 else "finish")
 	var result := Game.complete_level(level, elapsed, info.par_time, falls, player.coins, place)
 	await get_tree().create_timer(1.6, false).timeout
 	result_screen.show_result(level, Themes.level_name(level), elapsed, falls, place, bots.size() + 1, result)
@@ -164,4 +180,8 @@ func _setup_environment() -> void:
 
 
 func _setup_water() -> void:
-	WorldSetup.add_water(self, _theme, info.end_z * 0.5, -info.end_z + 260.0)
+	var box := AABB(_builder.waypoints[0], Vector3.ZERO)
+	for point in _builder.waypoints:
+		box = box.expand(point)
+	var center := box.get_center()
+	WorldSetup.add_water(self, _theme, Vector3(center.x, 0, center.z), Vector2(box.size.x + 240.0, box.size.z + 240.0))

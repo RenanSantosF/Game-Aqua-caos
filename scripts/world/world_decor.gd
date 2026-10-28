@@ -14,21 +14,58 @@ var _dolphins: Array[Dictionary] = []
 var _crowds: Array[Dictionary] = []
 
 
-## z_start é perto da largada (maior) e z_end perto da chegada (menor, negativo).
-func build(theme: Dictionary, z_start: float, z_end: float, seed_value := 1) -> void:
+var _route: Array[Vector3] = []
+
+
+## route: pontos do percurso em ordem. start/finish: onde ficam as torcidas.
+func build(theme: Dictionary, route: Array[Vector3], start: Transform3D, finish: Transform3D, seed_value := 1) -> void:
 	_theme = theme
 	_rng.seed = seed_value
-	var length := z_start - z_end
-	_build_islands(z_start, z_end)
-	_build_towers(z_start, z_end)
-	_build_buoys(z_start, z_end)
-	_build_clouds(z_start, z_end)
-	_build_birds(z_start, z_end)
-	_build_dolphins(z_start, z_end)
-	_build_stands(Vector3(0, 0, z_start - 4.0), 13.0)
-	_build_stands(Vector3(0, 0, z_end + 8.0), 13.0)
-	if length > 0.0 and theme.get("night", false):
-		_build_lights(z_start, z_end)
+	_route = route
+	var samples := _samples(22.0)
+	_build_islands(samples)
+	_build_towers(samples)
+	_build_buoys(_samples(9.0))
+	_build_clouds()
+	_build_birds(samples)
+	_build_dolphins(samples)
+	_build_stands(start * Transform3D(Basis(), Vector3(0, 0, -4.0)), 13.0)
+	_build_stands(finish, 13.0)
+	if theme.get("night", false):
+		_build_lights(_samples(12.0))
+
+
+## Pontos da rota a cada "spacing" metros, com a direção local.
+func _samples(spacing: float) -> Array:
+	var result: Array = []
+	if _route.size() < 2:
+		return result
+	var travelled := 0.0
+	for i in range(1, _route.size()):
+		var a := _route[i - 1]
+		var b := _route[i]
+		var step := Vector2(b.x - a.x, b.z - a.z).length()
+		travelled += step
+		if travelled >= spacing and step > 0.01:
+			travelled = 0.0
+			var direction := Vector3(b.x - a.x, 0, b.z - a.z).normalized()
+			result.append({"pos": Vector3(b.x, 0, b.z), "dir": direction, "right": direction.cross(Vector3.UP)})
+	return result
+
+
+## Longe o bastante do percurso para não atrapalhar.
+func _clear_of_route(point: Vector3, margin: float) -> bool:
+	for i in range(0, _route.size(), 2):
+		if Vector2(_route[i].x - point.x, _route[i].z - point.z).length() < margin:
+			return false
+	return true
+
+
+func _bounds() -> AABB:
+	var box := AABB(_route[0], Vector3.ZERO)
+	for p in _route:
+		box = box.expand(p)
+	return box
 
 
 func _process(delta: float) -> void:
@@ -72,14 +109,14 @@ func _process(delta: float) -> void:
 
 # --- Ilhas e coqueiros ------------------------------------------------------------------
 
-func _build_islands(z_start: float, z_end: float) -> void:
-	var z := z_start + 10.0
-	while z > z_end - 30.0:
+func _build_islands(samples: Array) -> void:
+	for sample in samples:
 		for side in [-1.0, 1.0]:
-			if _rng.randf() < 0.75:
-				var center := Vector3(side * _rng.randf_range(20.0, 34.0), 0, z + _rng.randf_range(-6.0, 6.0))
-				_island(center, _rng.randf_range(4.0, 7.5))
-		z -= _rng.randf_range(20.0, 28.0)
+			if _rng.randf() < 0.8:
+				var radius := _rng.randf_range(4.0, 7.5)
+				var center: Vector3 = sample.pos + sample.right * side * _rng.randf_range(19.0, 32.0) + sample.dir * _rng.randf_range(-6.0, 6.0)
+				if _clear_of_route(center, radius + 9.0):
+					_island(center, radius)
 
 
 func _island(center: Vector3, radius: float) -> void:
@@ -132,12 +169,15 @@ func _umbrella(parent: Node3D, base: Vector3) -> void:
 
 # --- Torres de tobogã ao longe ------------------------------------------------------------
 
-func _build_towers(z_start: float, z_end: float) -> void:
-	var count := 2 + int((z_start - z_end) / 90.0)
-	for i in count:
-		var side := -1.0 if i % 2 == 0 else 1.0
-		var z := lerpf(z_start, z_end, (i + 0.5) / count)
-		_tower(Vector3(side * _rng.randf_range(48.0, 62.0), -1.2, z), _rng.randf_range(14.0, 22.0), i)
+func _build_towers(samples: Array) -> void:
+	var index := 0
+	for i in range(1, samples.size(), 4):
+		var sample: Dictionary = samples[i]
+		var side := -1.0 if index % 2 == 0 else 1.0
+		var base: Vector3 = sample.pos + sample.right * side * _rng.randf_range(46.0, 60.0)
+		if _clear_of_route(base, 14.0):
+			_tower(base + Vector3(0, -1.2, 0), _rng.randf_range(14.0, 22.0), index)
+			index += 1
 
 
 func _tower(base: Vector3, height: float, index: int) -> void:
@@ -165,13 +205,17 @@ func _tower(base: Vector3, height: float, index: int) -> void:
 
 # --- Água viva ----------------------------------------------------------------------------
 
-func _build_buoys(z_start: float, z_end: float) -> void:
+func _build_buoys(samples: Array) -> void:
 	var palette: Array = _theme.palette
-	var z := z_start
-	while z > z_end:
+	for sample in samples:
+		if _rng.randf() < 0.35:
+			continue
 		var side := -1.0 if _rng.randf() < 0.5 else 1.0
+		var point: Vector3 = sample.pos + sample.right * side * _rng.randf_range(9.0, 16.0)
+		if not _clear_of_route(point, 6.5):
+			continue
 		var buoy := Node3D.new()
-		buoy.position = Vector3(side * _rng.randf_range(9.0, 16.0), -1.05, z)
+		buoy.position = Vector3(point.x, -1.05, point.z)
 		add_child(buoy)
 		var ring := Build.torus(buoy, 0.45, 0.95, palette[_rng.randi() % palette.size()])
 		ring.scale = Vector3(1, 1.4, 1)
@@ -179,11 +223,12 @@ func _build_buoys(z_start: float, z_end: float) -> void:
 			var stripe := Build.box(buoy, Vector3(0.3, 0.42, 0.55), Color.WHITE, Vector3(cos(k * PI * 0.5) * 0.7, 0, sin(k * PI * 0.5) * 0.7))
 			stripe.rotation.y = -k * PI * 0.5
 		_buoys.append(buoy)
-		z -= _rng.randf_range(7.0, 13.0)
 
 
-func _build_dolphins(z_start: float, z_end: float) -> void:
-	for i in 3:
+func _build_dolphins(samples: Array) -> void:
+	if samples.is_empty():
+		return
+	for i in 4:
 		var node := Node3D.new()
 		add_child(node)
 		var body := Build.capsule(node, 0.35, 1.8, Color("5c7fa8"), Vector3.ZERO, true)
@@ -193,9 +238,10 @@ func _build_dolphins(z_start: float, z_end: float) -> void:
 		var fin := Build.box(node, Vector3(0.08, 0.45, 0.4), Color("5c7fa8"), Vector3(0, 0.4, 0.1))
 		fin.rotation.x = 0.5
 		Build.box(node, Vector3(0.9, 0.06, 0.3), Color("5c7fa8"), Vector3(0, 0, 0.95))
+		var sample: Dictionary = samples[_rng.randi() % samples.size()]
 		var side := -1.0 if i % 2 == 0 else 1.0
-		var start := Vector3(side * _rng.randf_range(11.0, 18.0), -1.2, lerpf(z_start, z_end, _rng.randf()))
-		var direction := Vector3(0, 0, -1).rotated(Vector3.UP, _rng.randf_range(-0.6, 0.6))
+		var start: Vector3 = sample.pos + sample.right * side * _rng.randf_range(11.0, 18.0) + Vector3(0, -1.2, 0)
+		var direction: Vector3 = (sample.dir as Vector3).rotated(Vector3.UP, _rng.randf_range(-0.6, 0.6))
 		node.look_at_from_position(start, start + direction, Vector3.UP)
 		node.rotation.y += PI
 		node.visible = false
@@ -204,11 +250,12 @@ func _build_dolphins(z_start: float, z_end: float) -> void:
 
 # --- Céu ----------------------------------------------------------------------------------
 
-func _build_clouds(z_start: float, z_end: float) -> void:
+func _build_clouds() -> void:
+	var box := _bounds()
 	var white := Color.WHITE if not _theme.get("night", false) else Color("5a5f9a")
-	for i in 12:
+	for i in 14:
 		var cloud := Node3D.new()
-		cloud.position = Vector3(_rng.randf_range(-110.0, 110.0), _rng.randf_range(26.0, 42.0), lerpf(z_start + 40.0, z_end - 60.0, _rng.randf()))
+		cloud.position = Vector3(_rng.randf_range(box.position.x - 90.0, box.end.x + 90.0), _rng.randf_range(26.0, 42.0), _rng.randf_range(box.position.z - 60.0, box.end.z + 40.0))
 		add_child(cloud)
 		for k in 4:
 			var puff := Build.sphere(cloud, _rng.randf_range(2.5, 4.5), white, Vector3((k - 1.5) * 3.2, _rng.randf_range(-0.5, 1.2), _rng.randf_range(-1.5, 1.5)))
@@ -217,28 +264,32 @@ func _build_clouds(z_start: float, z_end: float) -> void:
 		_clouds.append(cloud)
 
 
-func _build_birds(z_start: float, z_end: float) -> void:
-	for i in 5:
+func _build_birds(samples: Array) -> void:
+	if samples.is_empty():
+		return
+	for i in 6:
 		var node := Node3D.new()
 		add_child(node)
-		Build.capsule(node, 0.12, 0.6, Color.WHITE, Vector3.ZERO).rotation.x = PI * 0.5
+		var body := Build.capsule(node, 0.12, 0.6, Color.WHITE, Vector3.ZERO)
+		body.rotation.x = PI * 0.5
 		var wing_l := Node3D.new()
 		node.add_child(wing_l)
 		Build.box(wing_l, Vector3(0.9, 0.04, 0.3), Color("eceff1"), Vector3(-0.45, 0, 0))
 		var wing_r := Node3D.new()
 		node.add_child(wing_r)
 		Build.box(wing_r, Vector3(0.9, 0.04, 0.3), Color("eceff1"), Vector3(0.45, 0, 0))
-		var center := Vector3(_rng.randf_range(-20.0, 20.0), _rng.randf_range(12.0, 18.0), lerpf(z_start, z_end, _rng.randf()))
+		var sample: Dictionary = samples[_rng.randi() % samples.size()]
+		var center: Vector3 = sample.pos + Vector3(_rng.randf_range(-15.0, 15.0), _rng.randf_range(12.0, 18.0), _rng.randf_range(-15.0, 15.0))
 		_birds.append({"node": node, "wing_l": wing_l, "wing_r": wing_r, "center": center, "radius": _rng.randf_range(6.0, 12.0), "speed": _rng.randf_range(0.3, 0.6), "offset": _rng.randf() * TAU})
 
 
 # --- Torcida ------------------------------------------------------------------------------
 
-func _build_stands(center: Vector3, offset_x: float) -> void:
+func _build_stands(place: Transform3D, offset_x: float) -> void:
 	var palette: Array = _theme.palette
 	for side in [-1.0, 1.0]:
 		var root := Node3D.new()
-		root.position = center + Vector3(side * offset_x, -1.2, 0)
+		root.transform = place * Transform3D(Basis(), Vector3(side * offset_x, -1.2, 0))
 		add_child(root)
 		for row in 3:
 			Build.box(root, Vector3(2.0, 1.0 + row * 1.0, 10.0), Color("eceff1") if row % 2 == 0 else Color("b0bec5"), Vector3(side * row * 2.0, (1.0 + row) * 0.5, 0))
@@ -283,15 +334,15 @@ func _build_stands(center: Vector3, offset_x: float) -> void:
 		_crowds.append({"bodies": bodies, "heads": heads, "base": base})
 
 
-func _build_lights(z_start: float, z_end: float) -> void:
+func _build_lights(samples: Array) -> void:
 	var palette: Array = _theme.palette
-	var z := z_start
 	var i := 0
-	while z > z_end:
+	for sample in samples:
 		for side in [-1.0, 1.0]:
-			var x: float = side * 7.5
-			Build.cylinder(self, 0.08, 3.5, Color("455a64"), Vector3(x, 0.55, z))
-			var bulb := Build.sphere(self, 0.28, palette[i % palette.size()], Vector3(x, 2.4, z))
+			var point: Vector3 = sample.pos + sample.right * side * 10.0
+			if not _clear_of_route(point, 7.0):
+				continue
+			Build.cylinder(self, 0.08, 3.5, Color("455a64"), point + Vector3(0, 0.55, 0))
+			var bulb := Build.sphere(self, 0.28, palette[i % palette.size()], point + Vector3(0, 2.4, 0))
 			bulb.material_override = Mat.glow(palette[i % palette.size()], 3.0)
 			i += 1
-		z -= 12.0

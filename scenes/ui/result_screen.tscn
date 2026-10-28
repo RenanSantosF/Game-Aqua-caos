@@ -123,7 +123,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843137, 0.25098, 1)
 theme_override_font_sizes/font_size = 30
-text = "NOVO RECORDE!"
+text = "RESULT_NEW_RECORD"
 horizontal_alignment = 1
 
 [node name="FallsLabel" type="Label" parent="Root/Center/Panel/VBox"]
@@ -153,6 +153,14 @@ theme_override_font_sizes/font_size = 34
 text = "+0 MOEDAS"
 horizontal_alignment = 1
 
+[node name="DoubleButton" type="Button" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = "RESULT_DOUBLE"
+
 [node name="Spacer" type="Control" parent="Root/Center/Panel/VBox"]
 custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
@@ -166,17 +174,17 @@ alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "MENU"
+text = "BTN_MENU"
 
 [node name="RetryButton" type="Button" parent="Root/Center/Panel/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "DE NOVO"
+text = "BTN_RETRY"
 
 [node name="NextButton" type="Button" parent="Root/Center/Panel/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 38
-text = "PRÓXIMA FASE"
+text = "BTN_NEXT"

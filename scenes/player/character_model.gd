@@ -9,6 +9,9 @@ extends Node3D
 @export var cap_color := Color("1e88e5")
 @export var shoe_color := Color("ffffff")
 @export var eye_color := Color("ffffff")
+## Acessórios: cap, frog_eyes, beak, float_ring, horn, pirate_hat,
+## headphones, visor, antenna, fin, crown, seeds.
+@export var extras: Array = ["cap"]
 ## Anima sozinho (menu): pula e comemora sem um Player.
 @export var demo_mode := false
 
@@ -70,21 +73,8 @@ func _build() -> void:
 	_mouth = Build.sphere(_body, 0.06, Color("7b1f1f"), Vector3(0, 0.1, -0.4))
 	_mouth.scale = Vector3(1.8, 0.7, 0.5)
 
-	# Boné
-	var cap_mesh := SphereMesh.new()
-	cap_mesh.radius = 0.44
-	cap_mesh.height = 0.44
-	cap_mesh.is_hemisphere = true
-	cap_mesh.radial_segments = 18
-	cap_mesh.rings = 6
-	var cap := MeshInstance3D.new()
-	cap.mesh = cap_mesh
-	cap.material_override = Mat.toon(cap_color, true)
-	cap.position = Vector3(0, 0.43, 0)
-	_body.add_child(cap)
-	var brim := Build.cylinder(_body, 0.3, 0.05, cap_color, Vector3(0, 0.45, -0.33), -1.0, true)
-	brim.rotation.x = -0.12
-	Build.sphere(_body, 0.07, Color.WHITE, Vector3(0, 0.87, 0))
+	for extra in extras:
+		_build_extra(str(extra))
 
 	# Braços e pernas (cada um num "ombro/quadril" que gira)
 	_arm_l = _limb(Vector3(-0.42, 0.02, 0), 0.1, 0.48, body_color, Color.WHITE, 0.12)
@@ -95,6 +85,82 @@ func _build() -> void:
 		var shoe: Node3D = leg.get_child(1)
 		shoe.scale = Vector3(1.0, 0.65, 1.45)
 		shoe.position.z = -0.05
+
+
+func _build_extra(kind: String) -> void:
+	match kind:
+		"cap":
+			var cap_mesh := SphereMesh.new()
+			cap_mesh.radius = 0.44
+			cap_mesh.height = 0.44
+			cap_mesh.is_hemisphere = true
+			cap_mesh.radial_segments = 18
+			cap_mesh.rings = 6
+			var cap := MeshInstance3D.new()
+			cap.mesh = cap_mesh
+			cap.material_override = Mat.toon(cap_color, true)
+			cap.position = Vector3(0, 0.43, 0)
+			_body.add_child(cap)
+			var brim := Build.cylinder(_body, 0.3, 0.05, cap_color, Vector3(0, 0.45, -0.33), -1.0, true)
+			brim.rotation.x = -0.12
+			Build.sphere(_body, 0.07, Color.WHITE, Vector3(0, 0.87, 0))
+		"frog_eyes":
+			for side in [-1.0, 1.0]:
+				Build.sphere(_body, 0.17, body_color, Vector3(0.2 * side, 0.68, -0.1), true)
+				Build.sphere(_body, 0.12, Color.WHITE, Vector3(0.2 * side, 0.72, -0.2))
+				Build.sphere(_body, 0.06, Color("1a2340"), Vector3(0.2 * side, 0.72, -0.3))
+		"beak":
+			var beak := Build.cylinder(_body, 0.13, 0.28, cap_color, Vector3(0, 0.14, -0.5), 0.02, true)
+			beak.rotation.x = -PI * 0.5
+			beak.scale = Vector3(1.3, 1.0, 0.6)
+			_mouth.visible = false
+		"float_ring":
+			var ring := Build.torus(_body, 0.42, 0.62, cap_color, Vector3(0, -0.32, 0))
+			ring.scale = Vector3(1, 1.5, 1)
+			for i in 4:
+				var a := i * PI * 0.5 + PI * 0.25
+				var stripe := Build.box(_body, Vector3(0.2, 0.2, 0.16), Color.WHITE, Vector3(cos(a) * 0.52, -0.32, sin(a) * 0.52))
+				stripe.rotation.y = -a
+		"horn":
+			var horn := Build.cylinder(_body, 0.09, 0.45, Color("fff59d"), Vector3(0, 0.88, -0.12), 0.0, true)
+			horn.rotation.x = -0.3
+			for side in [-1.0, 1.0]:
+				Build.sphere(_body, 0.1, cap_color, Vector3(0.28 * side, 0.62, 0.05), true)
+		"pirate_hat":
+			Build.cylinder(_body, 0.52, 0.06, cap_color, Vector3(0, 0.55, 0), -1.0, true)
+			Build.cylinder(_body, 0.34, 0.32, cap_color, Vector3(0, 0.72, 0), 0.3, true)
+			Build.sphere(_body, 0.07, Color.WHITE, Vector3(0, 0.74, -0.33))
+		"headphones":
+			var band := Build.torus(_body, 0.44, 0.52, cap_color, Vector3(0, 0.4, 0))
+			band.rotation.z = PI * 0.5
+			band.scale = Vector3(1, 1, 0.35)
+			for side in [-1.0, 1.0]:
+				var cup := Build.cylinder(_body, 0.16, 0.12, Color("e53935"), Vector3(0.45 * side, 0.3, 0), -1.0, true)
+				cup.rotation.z = PI * 0.5
+		"visor":
+			var visor := Build.sphere(_body, 0.3, Color("0d47a1"), Vector3(0, 0.33, -0.24), true)
+			visor.scale = Vector3(1.25, 0.7, 0.55)
+			visor.material_override = Mat.glow(Color("4fc3f7"), 0.5)
+			for eye in _eyes:
+				eye.visible = false
+		"antenna":
+			Build.cylinder(_body, 0.03, 0.4, Color("78909c"), Vector3(0.12, 0.85, 0))
+			var tip := Build.sphere(_body, 0.08, Color("ff1744"), Vector3(0.12, 1.06, 0))
+			tip.material_override = Mat.glow(Color("ff1744"), 2.0)
+		"fin":
+			var fin := Build.box(_body, Vector3(0.08, 0.42, 0.45), body_color, Vector3(0, 0.72, 0.16), true)
+			fin.rotation.x = 0.55
+		"crown":
+			Build.cylinder(_body, 0.27, 0.16, Color("ffca28"), Vector3(0, 0.66, 0), 0.3, true)
+			for i in 5:
+				var a := i * TAU / 5.0
+				Build.cylinder(_body, 0.06, 0.18, Color("ffca28"), Vector3(cos(a) * 0.26, 0.8, sin(a) * 0.26), 0.0)
+			var gem := Build.sphere(_body, 0.06, Color("e91e63"), Vector3(0, 0.68, -0.29))
+			gem.material_override = Mat.glow(Color("e91e63"), 1.0)
+		"seeds":
+			for i in 6:
+				var seed_dot := Build.sphere(_body, 0.035, Color("1a2340"), Vector3((i % 3 - 1) * 0.13, -0.05 - (i / 3) * 0.15, -0.36))
+				seed_dot.scale = Vector3(0.6, 1.0, 0.5)
 
 
 func _limb(pivot_position: Vector3, radius: float, length: float, color: Color, end_color: Color, end_radius: float) -> Node3D:
@@ -111,6 +177,7 @@ func set_colors(colors: Dictionary) -> void:
 	belly_color = colors.get("belly", belly_color)
 	cap_color = colors.get("cap", cap_color)
 	shoe_color = colors.get("shoe", shoe_color)
+	extras = colors.get("extras", ["cap"])
 	for child in get_children():
 		child.queue_free()
 	_eyes.clear()

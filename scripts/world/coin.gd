@@ -24,6 +24,9 @@ func _ready() -> void:
 	inner.rotation.x = PI * 0.5
 	var shine := Build.box(_visual, Vector3(0.08, 0.3, 0.16), Color("fff8e1"), Vector3(0, 0, 0))
 	shine.rotation.z = 0.3
+	# Objeto pequeno: sem sombra (evita sombra serrilhada e economiza).
+	for mesh in [disc, inner, shine]:
+		(mesh as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_time = randf() * TAU
 	body_entered.connect(_on_body_entered)
 

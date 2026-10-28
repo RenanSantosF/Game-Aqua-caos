@@ -44,5 +44,7 @@ func _physics_process(delta: float) -> void:
 				(body as Player).knockback(tangent * push + Vector3.UP * 6.5)
 
 
-func rotor_angle() -> float:
-	return _rotor.rotation.y
+## Ângulo global (no plano XZ) do bastão "index".
+func bar_angle(index: int) -> float:
+	var direction := _rotor.global_transform.basis * Vector3(1, 0, 0).rotated(Vector3.UP, index * TAU / bars)
+	return atan2(-direction.z, direction.x)

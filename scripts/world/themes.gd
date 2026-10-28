@@ -3,7 +3,7 @@ class_name Themes
 
 const LIST := [
 	{
-		"name": "Parque Tropical",
+		"name": "THEME_TROPICAL",
 		"sky_top": Color("2f7fe0"), "sky_horizon": Color("a8e4ff"),
 		"sun": Color("fff4d6"), "sun_energy": 0.90, "sun_pitch": -52.0, "sun_yaw": 35.0,
 		"ambient": 0.33,
@@ -13,7 +13,7 @@ const LIST := [
 		"night": false,
 	},
 	{
-		"name": "Pôr do Sol",
+		"name": "THEME_SUNSET",
 		"sky_top": Color("5b3a9e"), "sky_horizon": Color("ffab6b"),
 		"sun": Color("ffc38a"), "sun_energy": 0.80, "sun_pitch": -22.0, "sun_yaw": 150.0,
 		"ambient": 0.30,
@@ -23,7 +23,7 @@ const LIST := [
 		"night": false,
 	},
 	{
-		"name": "Lagoa Neon",
+		"name": "THEME_NEON",
 		"sky_top": Color("0b1036"), "sky_horizon": Color("3a2a7a"),
 		"sun": Color("a7b8ff"), "sun_energy": 0.50, "sun_pitch": -60.0, "sun_yaw": -40.0,
 		"ambient": 0.38,
@@ -33,7 +33,7 @@ const LIST := [
 		"night": true,
 	},
 	{
-		"name": "Ilha dos Doces",
+		"name": "THEME_CANDY",
 		"sky_top": Color("ff9ccf"), "sky_horizon": Color("fff0f7"),
 		"sun": Color("fff8f0"), "sun_energy": 0.87, "sun_pitch": -48.0, "sun_yaw": 10.0,
 		"ambient": 0.38,
@@ -43,7 +43,7 @@ const LIST := [
 		"night": false,
 	},
 	{
-		"name": "Recife de Coral",
+		"name": "THEME_CORAL",
 		"sky_top": Color("1f9e9a"), "sky_horizon": Color("c5fff4"),
 		"sun": Color("fffbe0"), "sun_energy": 0.94, "sun_pitch": -58.0, "sun_yaw": 70.0,
 		"ambient": 0.30,
@@ -54,17 +54,32 @@ const LIST := [
 	},
 ]
 
-const ADJECTIVES := ["Caos", "Desafio", "Correria", "Splash", "Turbilhão", "Maratona", "Loucura", "Aventura", "Festa", "Tsunami"]
-const PLACES := ["das Boias", "Molhado", "Radical", "da Lagoa", "do Tobogã", "das Ondas", "Escorregadio", "dos Martelos", "Tropical", "Gelado", "da Ilha", "Maluco"]
+const ADJECTIVE_COUNT := 10
+const PLACE_COUNT := 12
 
 
 static func for_level(level: int) -> Dictionary:
 	return LIST[(level - 1) % LIST.size()]
 
 
+## Nome da fase no idioma atual (ex.: "Festa das Ondas").
 static func level_name(level: int) -> String:
 	if level == 1:
-		return "Parque Aquático"
+		return TranslationServer.translate("LEVEL_FIRST")
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash("nome_%d" % level)
-	return "%s %s" % [ADJECTIVES[rng.randi() % ADJECTIVES.size()], PLACES[rng.randi() % PLACES.size()]]
+	var adjective := TranslationServer.translate("ADJ_%d" % (rng.randi() % ADJECTIVE_COUNT + 1))
+	var place := TranslationServer.translate("PLACE_%d" % (rng.randi() % PLACE_COUNT + 1))
+	if TranslationServer.get_locale().begins_with("en") and not place.begins_with("of "):
+		return "%s %s" % [place, adjective]
+	return "%s %s" % [adjective, place]
+
+
+## Posição no idioma atual: 1º / 1st / 1º.
+static func ordinal(n: int) -> String:
+	if TranslationServer.get_locale().begins_with("en"):
+		var suffix := "th"
+		if n % 100 < 11 or n % 100 > 13:
+			suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+		return "%d%s" % [n, suffix]
+	return "%dº" % n

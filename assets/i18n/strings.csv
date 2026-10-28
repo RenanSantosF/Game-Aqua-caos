@@ -1,0 +1,141 @@
+keys,pt_BR,en,es
+BTN_JUMP,PULAR,JUMP,SALTAR
+BTN_PLAY,JOGAR,PLAY,JUGAR
+BTN_SHOP,LOJA,SHOP,TIENDA
+BTN_SETTINGS,AJUSTES,SETTINGS,AJUSTES
+BTN_MAP,MAPA,MAP,MAPA
+BTN_BACK,VOLTAR,BACK,VOLVER
+BTN_CLOSE,FECHAR,CLOSE,CERRAR
+BTN_CANCEL,CANCELAR,CANCEL,CANCELAR
+BTN_BUY,COMPRAR,BUY,COMPRAR
+BTN_MENU,MENU,MENU,MENÚ
+BTN_RETRY,DE NOVO,AGAIN,OTRA VEZ
+BTN_NEXT,PRÓXIMA FASE,NEXT LEVEL,SIGUIENTE
+BTN_RESUME,CONTINUAR,RESUME,CONTINUAR
+BTN_RESTART,RECOMEÇAR,RESTART,REINICIAR
+BTN_EQUIP,USAR,EQUIP,USAR
+BTN_EQUIPPED,EM USO,EQUIPPED,EN USO
+BTN_CLAIM,PEGAR,CLAIM,RECOGER
+MENU_TAGLINE,"Corra, pule, mergulhe e chegue primeiro!","Run, jump, dive and finish first!","¡Corre, salta, zambúllete y llega primero!"
+MENU_SUBTITLE,DESAFIO MOLHADO,SPLASH CHALLENGE,DESAFÍO MOJADO
+MENU_NEXT_LEVEL,PRÓXIMA FASE,NEXT LEVEL,SIGUIENTE NIVEL
+MENU_PLAY_LEVEL,JOGAR  FASE %d,PLAY  LEVEL %d,JUGAR  NIVEL %d
+MENU_STATS,%d estrelas · %d fases concluídas,%d stars · %d levels cleared,%d estrellas · %d niveles superados
+DAILY_TITLE,PRESENTE DO DIA,DAILY GIFT,REGALO DIARIO
+DAILY_TEXT,Dia %d seguido! Ganhe %d moedas.,Day %d in a row! Get %d coins.,¡Día %d seguido! Gana %d monedas.
+SETTINGS_TITLE,AJUSTES,SETTINGS,AJUSTES
+SETTINGS_SOUND,SONS: %s,SOUNDS: %s,SONIDOS: %s
+SETTINGS_MUSIC,MÚSICA: %s,MUSIC: %s,MÚSICA: %s
+SETTINGS_LANGUAGE,IDIOMA: %s,LANGUAGE: %s,IDIOMA: %s
+ON,SIM,ON,SÍ
+OFF,NÃO,OFF,NO
+LANG_NAME,Português,English,Español
+HUD_LEVEL,FASE %d · %s,LEVEL %d · %s,NIVEL %d · %s
+HUD_CHECKPOINT,CHECKPOINT!,CHECKPOINT!,¡PUNTO DE CONTROL!
+HUD_SPLASH,SPLASH!,SPLASH!,¡SPLASH!
+HUD_GO,JÁ!,GO!,¡YA!
+HUD_PAUSE,PAUSA,PAUSED,PAUSA
+HUD_HINT_DIVE,Toque PULAR de novo no ar para mergulhar!,Tap JUMP again in the air to dive!,¡Toca SALTAR otra vez en el aire para zambullirte!
+RESULT_PLACE,%s LUGAR!,%s PLACE!,¡%s LUGAR!
+RESULT_FINISHED,CHEGOU!,FINISHED!,¡LLEGASTE!
+RESULT_YOU_PLACED,Você chegou em %s de %d,You finished %s of %d,Llegaste %s de %d
+RESULT_TIME,TEMPO: %s,TIME: %s,TIEMPO: %s
+RESULT_BEST,RECORDE: %s,BEST: %s,RÉCORD: %s
+RESULT_NEW_RECORD,NOVO RECORDE!,NEW RECORD!,¡NUEVO RÉCORD!
+RESULT_FALLS,QUEDAS NA ÁGUA: %d,SPLASHDOWNS: %d,CAÍDAS AL AGUA: %d
+RESULT_COINS_COLLECTED,Moedas coletadas: %d,Coins collected: %d,Monedas recogidas: %d
+RESULT_FINISH_BONUS,Chegada: +%d,Finish: +%d,Llegada: +%d
+RESULT_NO_FALL_BONUS,Sem cair: +%d,No falls: +%d,Sin caer: +%d
+RESULT_PLACE_BONUS,%s lugar: +%d,%s place: +%d,%s lugar: +%d
+RESULT_TOTAL,+%d MOEDAS,+%d COINS,+%d MONEDAS
+RESULT_DOUBLE,DOBRAR (ANÚNCIO),DOUBLE (AD),DUPLICAR (ANUNCIO)
+MAP_TITLE,MAPA DE AVENTURAS,ADVENTURE MAP,MAPA DE AVENTURAS
+MAP_LOCKED,Complete a fase anterior!,Finish the previous level!,¡Completa el nivel anterior!
+MAP_LEVEL,FASE %d,LEVEL %d,NIVEL %d
+MAP_BEST,Recorde: %s,Best: %s,Récord: %s
+SHOP_TITLE,LOJA,SHOP,TIENDA
+SHOP_TAB_SKINS,SKINS,SKINS,SKINS
+SHOP_TAB_COINS,MOEDAS,COINS,MONEDAS
+SHOP_FREE,Grátis,Free,Gratis
+SHOP_COINS,%d moedas,%d coins,%d monedas
+SHOP_AD_RENT,Grátis por %d dias assistindo anúncio,Free for %d days by watching an ad,Gratis por %d días viendo un anuncio
+SHOP_WATCH_AD,ASSISTIR (%d DIAS),WATCH AD (%d DAYS),VER ANUNCIO (%d DÍAS)
+SHOP_PREMIUM,Exclusiva,Exclusive,Exclusiva
+SHOP_BUY_COINS,COMPRAR  %d,BUY  %d,COMPRAR  %d
+SHOP_OWNED,Sua!,Yours!,¡Tuya!
+SHOP_RENTED_LEFT,Alugada: %s,Rented: %s,Alquilada: %s
+SHOP_NOT_ENOUGH,Moedas insuficientes!,Not enough coins!,¡Monedas insuficientes!
+SHOP_UNLOCKED,Nova skin liberada!,New skin unlocked!,¡Nueva skin desbloqueada!
+SHOP_FREE_COINS,+%d MOEDAS GRÁTIS (ANÚNCIO),+%d FREE COINS (AD),+%d MONEDAS GRATIS (ANUNCIO)
+SHOP_DAYS_HOURS,%dd %dh,%dd %dh,%dd %dh
+SHOP_HOURS_MIN,%dh %dmin,%dh %dmin,%dh %dmin
+PACK_SMALL,Saquinho: %d moedas,Small bag: %d coins,Bolsita: %d monedas
+PACK_BIG,Baú: %d moedas,Chest: %d coins,Cofre: %d monedas
+PACK_MEGA,Tesouro: %d moedas,Treasure: %d coins,Tesoro: %d monedas
+AD_TEST_BADGE,MODO DE TESTE — NÃO É UM ANÚNCIO REAL,TEST MODE — NOT A REAL AD,MODO DE PRUEBA — NO ES UN ANUNCIO REAL
+AD_TEST_TITLE,Anúncio,Advertisement,Anuncio
+AD_REWARD_TITLE,Anúncio com prêmio,Rewarded ad,Anuncio con premio
+AD_REWARD_CLAIM,GANHAR PRÊMIO,GET REWARD,OBTENER PREMIO
+AD_TEST_WAIT,Aguarde %d s...,Please wait %d s...,Espera %d s...
+AD_TEST_DONE,Pronto!,Done!,¡Listo!
+BUY_TEST_TITLE,Compra (teste),Purchase (test),Compra (prueba)
+BUY_TEST_PRICE,Preço: %s — nenhum valor será cobrado no modo de teste.,Price: %s — nothing is charged in test mode.,Precio: %s — no se cobra nada en modo de prueba.
+SKIN_CLASSIC,Clássico,Classic,Clásico
+SKIN_SPLASH,Splash,Splash,Splash
+SKIN_MELON,Melancia,Watermelon,Sandía
+SKIN_FROG,Sapinho,Froggy,Ranita
+SKIN_DUCK,Patinho de Boia,Float Duck,Patito Flotador
+SKIN_PENGUIN,Pinguim,Penguin,Pingüino
+SKIN_UNICORN,Unicórnio,Unicorn,Unicornio
+SKIN_PIRATE,Pirata,Pirate,Pirata
+SKIN_DJ,DJ Onda,DJ Wave,DJ Ola
+SKIN_ASTRONAUT,Astronauta,Astronaut,Astronauta
+SKIN_SHARK,Tubarão,Shark,Tiburón
+SKIN_ROBOT,Robô Bolha,Bubble Bot,Robot Burbuja
+SKIN_KING,Rei da Piscina,Pool King,Rey de la Piscina
+SKIN_LAVA,Dragão de Lava,Lava Dragon,Dragón de Lava
+THEME_TROPICAL,Parque Tropical,Tropical Park,Parque Tropical
+THEME_SUNSET,Pôr do Sol,Sunset Bay,Atardecer
+THEME_NEON,Lagoa Neon,Neon Lagoon,Laguna Neón
+THEME_CANDY,Ilha dos Doces,Candy Island,Isla de Dulces
+THEME_CORAL,Recife de Coral,Coral Reef,Arrecife de Coral
+LEVEL_FIRST,Parque Aquático,Water Park,Parque Acuático
+SIGN_START,LARGADA,START,SALIDA
+SIGN_SLIDE,ESCORREGUE!,SLIDE!,¡DESLÍZATE!
+SIGN_SWEEPER,PULE O BASTÃO!,JUMP THE BAR!,¡SALTA LA BARRA!
+SIGN_HAMMER,ESPERE O MARTELO PASSAR,WAIT FOR THE HAMMER,ESPERA AL MARTILLO
+SIGN_ELEVATOR,SUBA NOS ELEVADORES!,RIDE THE LIFTS!,¡SUBE A LOS ELEVADORES!
+SIGN_RAMP,DECOLE!,TAKE OFF!,¡DESPEGA!
+SIGN_BOUNCE,PULE NAS BOIAS!,BOUNCE ON THE FLOATS!,¡REBOTA EN LOS FLOTADORES!
+SIGN_VANISH,O PISO CAI!,THE FLOOR FALLS!,¡EL PISO SE CAE!
+SIGN_LOGS,PULE OS ROLOS!,HOP THE LOGS!,¡SALTA LOS RODILLOS!
+SIGN_DRUM,EQUILIBRE-SE!,KEEP YOUR BALANCE!,¡MANTÉN EL EQUILIBRIO!
+SIGN_FANS,CUIDADO COM O VENTO!,WATCH THE WIND!,¡CUIDADO CON EL VIENTO!
+SIGN_BEAMS,PASSOS FIRMES!,STEADY STEPS!,¡PASOS FIRMES!
+SIGN_BALLS,DESVIE DAS BOLAS!,DODGE THE BALLS!,¡ESQUIVA LAS BOLAS!
+SIGN_CONVEYOR,CORRA CONTRA A ESTEIRA!,RUN AGAINST THE BELT!,¡CORRE CONTRA LA CINTA!
+SIGN_GEYSER,SUBA COM O JATO!,RIDE THE GEYSER!,¡SUBE CON EL CHORRO!
+ADJ_1,Caos,Chaos,Caos
+ADJ_2,Desafio,Challenge,Desafío
+ADJ_3,Correria,Rush,Carrera
+ADJ_4,Splash,Splash,Splash
+ADJ_5,Turbilhão,Whirlpool,Remolino
+ADJ_6,Maratona,Marathon,Maratón
+ADJ_7,Loucura,Madness,Locura
+ADJ_8,Aventura,Adventure,Aventura
+ADJ_9,Festa,Party,Fiesta
+ADJ_10,Tsunami,Tsunami,Tsunami
+PLACE_1,das Boias,of Floats,de Flotadores
+PLACE_2,Molhado,Soaked,Mojado
+PLACE_3,Radical,Extreme,Extremo
+PLACE_4,da Lagoa,of the Lagoon,de la Laguna
+PLACE_5,do Tobogã,of the Slide,del Tobogán
+PLACE_6,das Ondas,of Waves,de las Olas
+PLACE_7,Escorregadio,Slippery,Resbaladizo
+PLACE_8,dos Martelos,of Hammers,de Martillos
+PLACE_9,Tropical,Tropical,Tropical
+PLACE_10,Gelado,Frosty,Helado
+PLACE_11,da Ilha,of the Island,de la Isla
+PLACE_12,Maluco,Crazy,Loco
+SHOP_AD_SHORT,Grátis: anúncio,Free: watch ad,Gratis: anuncio
+SIGN_FINISH,CHEGADA,FINISH,META
