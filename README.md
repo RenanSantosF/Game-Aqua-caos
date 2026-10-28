@@ -26,7 +26,7 @@ Corra, pule, mergulhe e chegue primeiro!
 Para entender como tudo funciona, veja:
 
 - jogo, controles e como ajustar: [docs/JOGO_3D.md](docs/JOGO_3D.md);
-- anúncios e compras (hoje em **modo de teste**):
+- anúncios AdMob e compras (as compras ainda são simuladas):
   [docs/MONETIZACAO.md](docs/MONETIZACAO.md).
 
 ## Baixar o APK (jogar no celular)

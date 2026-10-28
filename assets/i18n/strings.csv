@@ -78,6 +78,8 @@ AD_REWARD_TITLE,Anúncio com prêmio,Rewarded ad,Anuncio con premio
 AD_REWARD_CLAIM,GANHAR PRÊMIO,GET REWARD,OBTENER PREMIO
 AD_TEST_WAIT,Aguarde %d s...,Please wait %d s...,Espera %d s...
 AD_TEST_DONE,Pronto!,Done!,¡Listo!
+AD_LOADING,Carregando anúncio...,Loading ad...,Cargando anuncio...
+AD_UNAVAILABLE,Nenhum anúncio disponível agora. Tente de novo daqui a pouco!,No ad available right now. Try again soon!,No hay anuncios disponibles ahora. ¡Inténtalo de nuevo pronto!
 BUY_TEST_TITLE,Compra (teste),Purchase (test),Compra (prueba)
 BUY_TEST_PRICE,Preço: %s — nenhum valor será cobrado no modo de teste.,Price: %s — nothing is charged in test mode.,Precio: %s — no se cobra nada en modo de prueba.
 SKIN_CLASSIC,Clássico,Classic,Clásico

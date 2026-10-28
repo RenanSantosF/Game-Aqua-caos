@@ -1,82 +1,97 @@
 # Monetização: skins, anúncios e compras
 
-## O que já está pronto (modo de teste)
+## Situação atual
 
-Todo o fluxo do jogo já funciona, usando telas **simuladas** marcadas como
-"MODO DE TESTE — NÃO É UM ANÚNCIO REAL". Nenhum valor é cobrado e nenhum
-anúncio de verdade é exibido.
+| Recurso | Situação |
+|---|---|
+| Anúncio entre fases (a cada **2 fases**) | **AdMob real** |
+| Anúncio premiado (dobrar moedas, +50 moedas, skin por 3 dias) | **AdMob real** |
+| Compras com dinheiro (skins exclusivas e pacotes de moedas) | Simuladas (modo de teste) |
 
-| Recurso | Onde | Como funciona |
-|---|---|---|
-| Skins com moedas | Loja → SKINS | 7 skins de 150 a 900 moedas |
-| Skins grátis por anúncio | Loja → SKINS ("Grátis: anúncio") | Assistir um anúncio recompensado libera a skin por **3 dias**. Assistir de novo soma mais 3 dias. Quando vence, a skin volta para a Clássica sozinha. |
-| Skins exclusivas | Loja → SKINS ("Exclusiva") | Compra com dinheiro real: Tubarão, Robô Bolha, Rei da Piscina, Dragão de Lava |
-| Pacotes de moedas | Loja → MOEDAS | 3 pacotes com dinheiro real e +50 moedas grátis assistindo anúncio |
-| Dobrar moedas | Tela de resultado | Anúncio recompensado opcional que dobra as moedas da fase |
-| Anúncio entre fases | Ao sair do resultado | A cada **2 fases concluídas**. Nunca aparece no meio de uma corrida. |
+## Anúncios (AdMob)
 
-Todas as chamadas passam por um único arquivo:
-`scripts/autoload/monetization.gd`. As funções usadas pelo jogo são:
+### Como funciona
 
-- `show_interstitial()`: anúncio entre fases;
-- `show_rewarded() -> bool`: anúncio recompensado (retorna se foi assistido até o fim);
-- `purchase(produto) -> bool`: compra (retorna se foi concluída);
-- `price_of(produto)`: preço exibido na loja.
+- O plugin `android_plugin/` (Java) usa o SDK oficial do Google Mobile
+  Ads. O GitHub Actions compila esse plugin e o inclui no APK
+  automaticamente.
+- `addons/aqua_ads/aqua_ads.gd` coloca o ID do app AdMob no APK e remove
+  as permissões de rastreamento.
+- `scripts/autoload/monetization.gd` guarda os IDs dos blocos e decide
+  quando mostrar.
 
-Para ligar os serviços reais, basta trocar o conteúdo dessas funções. O
-resto do jogo não muda.
+| Bloco | ID |
+|---|---|
+| App | `ca-app-pub-4311255826061303~5610988046` |
+| Entre fases (intersticial) | `ca-app-pub-4311255826061303/2764286671` |
+| Dobrar Moedas, Moedas Grátis, Skins (premiado) | `ca-app-pub-4311255826061303/1946029022` |
 
-## O que é preciso para publicar com anúncios e compras reais
+### Anúncios de teste e anúncios reais
 
-### 1. Exportação com "Gradle build"
+- O **APK de teste** (o da release `apk-teste`) mostra anúncios de **teste
+  do Google**, com a etiqueta "Test Ad". Assim você pode testar e clicar à
+  vontade.
+  - Clicar nos seus próprios anúncios reais pode suspender a conta AdMob.
+  - Se o anúncio de teste aparece, a integração está funcionando.
+- A **versão de publicação** (build *release*) usa os seus blocos reais
+  automaticamente. Isso é decidido por `OS.is_debug_build()` em
+  `monetization.gd`.
+- O APK ficou maior porque agora ele é montado pelo Gradle e inclui o SDK
+  de anúncios.
 
-Plugins Android do Godot (anúncios e pagamentos) exigem o modo **Gradle
-build** na exportação. O workflow do GitHub Actions precisará:
+### Regras para o público infantil (já configuradas)
 
-- instalar o template de build Android do Godot 4.3 (`android_source.zip`);
-- ligar `gradle_build/use_gradle_build=true` em `export_presets.cfg`;
-- copiar os plugins para `android/plugins`.
+Todas as solicitações de anúncio vão com:
 
-Isso dá para fazer inteiramente pelo GitHub Actions, sem computador.
+- marcação de conteúdo **direcionado a crianças**;
+- marcação de **menor de idade**;
+- classificação máxima **G** (livre).
 
-### 2. Compras (Google Play Billing)
+O app não declara a permissão de ID de publicidade (`AD_ID`) nem as APIs
+de rastreamento do Android (Privacy Sandbox).
 
-- Use o plugin **oficial** de pagamentos da Google Play para Godot
-  (repositório `godotengine/godot-google-play-billing`) e siga a
-  documentação dele.
-- Na **Google Play Console**, crie os produtos com os mesmos IDs usados no
-  jogo:
-  - skins: `skin_shark`, `skin_robot`, `skin_king`, `skin_lava`;
-  - moedas: `coins_small`, `coins_big`, `coins_mega`.
-- Skins são produtos **não consumíveis** (compra única). Moedas são
-  **consumíveis**.
-- Os preços reais vêm da Play Store. Os de `TEST_PRICES` são só exemplos.
+No painel do AdMob, confira também:
 
-### 3. Anúncios
+- **Controles de bloqueio** → classificação máxima de conteúdo **G**;
+- as configurações do app para público infantil (tratamento direcionado a
+  crianças).
 
-**Atenção: o jogo atrai crianças.** A Google Play exige que apps para o
-público infantil participem do programa **Famílias** e usem somente SDKs de
-anúncio **autocertificados para Famílias**, com anúncios adequados à idade:
-sem anúncios personalizados e sem rastreamento de crianças.
+### Comportamento no jogo
 
-- O AdMob é certificado para Famílias quando configurado como
-  "direcionado a crianças" (tag *child-directed* / classificação máxima G).
-- Para usar AdMob no Godot é preciso um plugin Android de terceiros
-  compatível com Godot 4.3. Escolha um mantido e siga a documentação
-  **dele**. Este projeto não inventa chamadas de API.
-- Configure o consentimento (UMP/GDPR) e a política de privacidade antes de
-  publicar.
-- Frequência atual: 1 anúncio entre fases a cada 2 fases
-  (`Game.INTERSTITIAL_EVERY`). Anúncios recompensados são sempre
-  opcionais.
+- O anúncio entre fases só aparece se já estiver carregado. Se não
+  estiver, o jogo segue normalmente, sem espera.
+- O premiado mostra "Carregando anúncio..." por até 5 s. Se não houver
+  anúncio, avisa e não dá o prêmio.
+- O prêmio só é dado se o anúncio for assistido até o fim.
+- O som do jogo fica mudo enquanto o anúncio aparece.
+- No PC/editor, onde não há AdMob, aparece uma tela simulada.
 
-### 4. Desligar o modo de teste
+### Antes de publicar na Play Store
 
-Depois de integrar os plugins, em `scripts/autoload/monetization.gd`:
+- Gerar o build *release* assinado com a sua chave de publicação (AAB).
+  Isso pode ser feito pelo GitHub Actions.
+- Vincular o app do AdMob ao app publicado na Play Store.
+- Publicar o arquivo `app-ads.txt` no site de desenvolvedor informado na
+  Play Store.
+- Preencher a política de privacidade e o formulário "Segurança dos dados"
+  informando o uso do SDK de anúncios.
 
-1. troque `TEST_MODE := true` por `false`;
-2. implemente as chamadas reais dentro de `show_interstitial`,
-   `show_rewarded`, `purchase` e `price_of`.
+## Compras (Google Play Billing), ainda simuladas
+
+Hoje as compras mostram uma tela "MODO DE TESTE" e liberam o item sem
+cobrar. **Antes de publicar** é preciso:
+
+1. Usar o plugin **oficial** de pagamentos da Google Play para Godot
+   (`godotengine/godot-google-play-billing`).
+2. Na **Google Play Console**, criar os produtos com os mesmos IDs usados
+   no jogo:
+   - skins: `skin_shark`, `skin_robot`, `skin_king`, `skin_lava`. São
+     **não consumíveis** (compra única).
+   - moedas: `coins_small`, `coins_big`, `coins_mega`. São
+     **consumíveis**.
+3. Trocar o conteúdo de `purchase()` e `price_of()` em `monetization.gd`.
+
+Os preços reais vêm da Play Store. Os de `TEST_PRICES` são só exemplos.
 
 ## Boas práticas já seguidas
 

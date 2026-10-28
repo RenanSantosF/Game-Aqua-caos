@@ -148,5 +148,6 @@ tools/audio/    gerador das músicas e efeitos
   parado, ele volta ao último checkpoint. Se cair 2 vezes no mesmo ponto,
   ganha uma proteção temporária.
 - O jogador e os rivais atravessam uns aos outros (sem trombadas).
-- Anúncios e compras estão em **modo de teste** (ver
+- Os anúncios usam o AdMob. O APK de teste mostra anúncios de teste do
+  Google. As compras ainda são simuladas (ver
   [MONETIZACAO.md](MONETIZACAO.md)).

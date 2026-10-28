@@ -72,6 +72,28 @@ jobs:
           EOT
           cat ~/.config/godot/editor_settings-${GODOT_VERSION}.tres
 
+      - name: Instalar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+
+      - name: Compilar o plugin de anúncios (AdMob)
+        run: |
+          set -e
+          cd android_plugin
+          gradle --no-daemon assembleRelease
+          mkdir -p ../addons/aqua_ads/bin
+          cp build/outputs/aar/aqua-ads-release.aar ../addons/aqua_ads/bin/aqua-ads.aar
+
+      - name: Instalar o template de build Android (Gradle)
+        run: |
+          set -e
+          rm -rf android
+          mkdir -p android/build
+          unzip -q ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/android_source.zip -d android/build
+          echo -n "${GODOT_VERSION}.stable" > android/.build_version
+          touch android/build/.gdignore
+
       - name: Numerar a versão com o número da execução
         run: sed -i "s/^version\/code=.*/version\/code=${{ github.run_number }}/" export_presets.cfg
 

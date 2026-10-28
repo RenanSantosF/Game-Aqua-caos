@@ -13,3 +13,8 @@
 
 # Keystore de TESTE (debug) usada pelo GitHub Actions — pode ficar no repositório.
 !ci/debug.keystore
+
+# Plugin de anúncios: gerado pelo GitHub Actions a partir de android_plugin/
+/addons/aqua_ads/bin/
+/android_plugin/build/
+/android_plugin/.gradle/
