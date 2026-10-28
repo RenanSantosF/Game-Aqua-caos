@@ -146,15 +146,19 @@ func _show_tab(tab: String) -> void:
 		child.queue_free()
 	_cards.clear()
 	if tab == "skins":
+		# Quantas colunas cabem: 3 em telas 16:9, 4 ou mais em telas largas.
+		var available := get_viewport_rect().size.x - 500.0
+		var columns := clampi(int((available + 12.0) / 242.0), 2, 5)
+		var card_width := floorf((available - 12.0 * (columns - 1)) / columns)
 		_grid = GridContainer.new()
-		_grid.columns = 4
+		_grid.columns = columns
 		_grid.add_theme_constant_override("h_separation", 12)
 		_grid.add_theme_constant_override("v_separation", 12)
 		_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_list_holder.add_child(_grid)
 		var i := 0
 		for skin in Skins.LIST:
-			var card := _skin_card(skin)
+			var card := _skin_card(skin, Vector2(card_width, 230))
 			_grid.add_child(card)
 			_cards[skin.id] = card
 			_pop_later(card, i * 0.04)
@@ -179,8 +183,8 @@ func _pop_later(control: Control, delay: float) -> void:
 	UiKit.pop_in(control, delay)
 
 
-func _skin_card(skin: Dictionary) -> Button:
-	var card := UiKit.button("", "blue", 20, Vector2(230, 230))
+func _skin_card(skin: Dictionary, card_size: Vector2) -> Button:
+	var card := UiKit.button("", "blue", 20, card_size)
 	card.pressed.connect(_select.bind(skin.id))
 	var column := VBoxContainer.new()
 	column.set_anchors_preset(Control.PRESET_FULL_RECT)

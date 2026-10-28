@@ -44,6 +44,8 @@ SHOTS = [
                     "es": "Mundos coloridos de día y de noche"}),
     ("result.png", {"pt_BR": "Ganhe moedas, estrelas e recordes", "en": "Earn coins, stars and records",
                     "es": "Gana monedas, estrellas y récords"}),
+    ("menu.png", {"pt_BR": "Jogue offline, quando quiser!", "en": "Play offline, anytime!",
+                  "es": "¡Juega sin conexión cuando quieras!"}),
 ]
 
 
@@ -123,6 +125,8 @@ def caption_shot(raw_path, caption):
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, 1519, 854), 34, fill=255)
     img.paste(shot, (x, y), mask)
     d = ImageDraw.Draw(img)
+    # O contorno grosso "come" o espaço entre as palavras: usa espaço duplo.
+    caption = caption.replace(" ", "  ")
     size = 92
     while d.textlength(caption, font=font(size)) > 1700:
         size -= 4

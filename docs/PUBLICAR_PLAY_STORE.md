@@ -7,7 +7,7 @@ Tudo o que o jogo precisa já está no repositório:
 | AAB assinado | Release `apk-teste` → `aqua-caos.aab` (depois do passo 1) |
 | Ícone 512×512 | `store/icon_512.png` |
 | Banner 1024×500 | `store/<idioma>/feature_graphic_1024x500.png` |
-| Capturas 1920×1080 | `store/<idioma>/screenshot_1..7.png` |
+| Capturas 1920×1080 | `store/<idioma>/screenshot_1..8.png` |
 | Textos da ficha | `store/LISTING.md` |
 | Política de privacidade | `PRIVACY.md` |
 
@@ -79,7 +79,7 @@ Quem coleta dados é o SDK do AdMob. O jogo em si não envia nada.
 **Presença na loja → Página principal da loja:**
 
 1. Copie título, descrição curta e completa de `store/LISTING.md`.
-2. Envie o ícone, o banner e as 7 capturas.
+2. Envie o ícone, o banner e as 8 capturas.
 3. Em **Gerenciar traduções**, adicione inglês (Estados Unidos) e espanhol
    (América Latina) com os textos e imagens de cada pasta.
 

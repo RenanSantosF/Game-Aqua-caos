@@ -10,7 +10,7 @@ Imagens de cada idioma ficam na pasta dele:
 
 - `store/pt-BR`, `store/en-US` e `store/es-419`;
 - banner: `feature_graphic_1024x500.png`;
-- capturas: `screenshot_1..7.png`, 1920×1080;
+- capturas: `screenshot_1..8.png`, 1920×1080;
 - ícone (igual para todos): `store/icon_512.png`.
 
 ---
