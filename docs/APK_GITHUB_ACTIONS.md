@@ -33,7 +33,7 @@ Leva de 3 a 6 minutos.
 ## O que o workflow faz
 
 1. Instala o Java 17. O Android SDK já vem na máquina do GitHub.
-2. Baixa o **Godot 4.3-stable** e os **templates de exportação**, e guarda
+2. Baixa o **Godot 4.7.2-stable** e os **templates de exportação**, e guarda
    em cache para os próximos builds.
 3. Configura o Godot com o SDK e com a keystore de teste `ci/debug.keystore`.
 4. Usa o número da execução como `version/code`, para que cada APK seja
@@ -43,14 +43,20 @@ Leva de 3 a 6 minutos.
 
 ## Sobre a assinatura (importante)
 
-- O APK é assinado com a keystore **de teste** `ci/debug.keystore` (senha
-  `android`). Por ser sempre a mesma, as atualizações instalam **por cima**
-  sem desinstalar.
-- Essa keystore é **pública** (está no repositório). Serve só para teste.
-- **Para publicar na Google Play** (Etapa 10) será criada uma keystore de
-  **release** privada, guardada nos *Secrets* do GitHub e nunca no
-  repositório. A Play Store também exige **AAB**, que precisa do "Gradle
-  build". Isso também será configurado no Actions.
+- O **APK de teste** é assinado com a keystore **de teste**
+  `ci/debug.keystore` (senha `android`).
+  - Por ser sempre a mesma, as atualizações instalam **por cima** sem
+    desinstalar.
+  - Essa keystore é pública (está no repositório) e serve só para teste.
+- O **AAB da Play Store** é assinado com a **chave de upload**, guardada
+  **criptografada** em `ci/upload.keystore.enc`.
+  - O workflow decifra a chave com o secret `AAB_KEY_PASSWORD`.
+  - Sem esse secret, o workflow gera só o APK.
+  - Veja `docs/PUBLICAR_PLAY_STORE.md`.
+- O build usa o modo **Gradle** do Godot, necessário para o plugin de
+  anúncios e para o AAB.
+- O jogo usa o Android 16 (API 36) como alvo, como a Play Store exige, e
+  as bibliotecas são alinhadas em 16 KB.
 
 ## Se o build falhar
 

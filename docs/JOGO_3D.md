@@ -1,6 +1,6 @@
 # Aqua Caos 3D: jogabilidade, fases infinitas e rivais
 
-Versão 0.4. Personagens, obstáculos e cenário são gerados por código. As
+Versão 1.0. Personagens, obstáculos e cenário são gerados por código. As
 músicas e os efeitos sonoros são arquivos `.ogg` criados pelo script
 `tools/audio/generate_audio.py`.
 

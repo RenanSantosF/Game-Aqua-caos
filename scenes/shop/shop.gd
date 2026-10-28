@@ -167,7 +167,7 @@ func _show_tab(tab: String) -> void:
 		var free := UiKit.button(tr("SHOP_FREE_COINS") % 50, "green", 30, Vector2(0, 86))
 		free.pressed.connect(_free_coins)
 		column.add_child(free)
-		for pack in Skins.COIN_PACKS:
+		for pack in Skins.COIN_PACKS if Monetization.purchases_available() else []:
 			var button := UiKit.button("%s   %s" % [tr(pack.label) % pack.coins, Monetization.price_of(pack.product)], "orange", 30, Vector2(0, 86))
 			button.pressed.connect(_buy_pack.bind(pack))
 			column.add_child(button)
@@ -234,7 +234,11 @@ func _refresh() -> void:
 		"ad":
 			_action.text = tr("SHOP_WATCH_AD") % Skins.RENT_DAYS
 		"premium":
-			_action.text = "%s  %s" % [tr("BTN_BUY"), Monetization.price_of(skin.product)]
+			if Monetization.purchases_available():
+				_action.text = "%s  %s" % [tr("BTN_BUY"), Monetization.price_of(skin.product)]
+			else:
+				_action.text = tr("SHOP_SOON")
+				_action.disabled = true
 
 
 func _tag_text(skin: Dictionary) -> String:
@@ -250,7 +254,8 @@ func _tag_text(skin: Dictionary) -> String:
 		"ad":
 			return tr("SHOP_AD_RENT") % Skins.RENT_DAYS
 		"premium":
-			return tr("SHOP_PREMIUM") + " · " + Monetization.price_of(skin.product)
+			var price := Monetization.price_of(skin.product) if Monetization.purchases_available() else tr("SHOP_SOON")
+			return tr("SHOP_PREMIUM") + " · " + price
 	return tr("SHOP_FREE")
 
 

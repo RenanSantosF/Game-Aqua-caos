@@ -1,6 +1,6 @@
 # ETAPA 1 — Criar o projeto e configurar a tela horizontal
 
-Objetivo: ter o projeto aberto no **Godot 4.3 para Android**, rodando em tela
+Objetivo: ter o projeto aberto no **Godot 4.7.2 para Android**, rodando em tela
 horizontal 16:9, com a estrutura de pastas pronta para as próximas etapas.
 
 > **Atualização:** o jogo agora é 3D. As instruções de instalação e
@@ -8,14 +8,14 @@ horizontal 16:9, com a estrutura de pastas pronta para as próximas etapas.
 
 ---
 
-## 1. Instalar o Godot 4.3 no celular
+## 1. Instalar o Godot 4.7.2 no celular
 
 A versão da Play Store sempre instala a mais nova (pode ser 4.4, 4.5…). Como o
-projeto é para **4.3**, use o APK oficial dessa versão:
+projeto é para **4.7.2**, use o APK oficial dessa versão:
 
 1. No navegador do celular, abra
-   `https://github.com/godotengine/godot/releases/tag/4.3-stable`
-2. Em **Assets**, baixe `Godot_v4.3-stable_android_editor.apk`.
+   `https://github.com/godotengine/godot/releases/tag/4.7.2-stable`
+2. Em **Assets**, baixe `Godot_v4.7.2-stable_android_editor.apk`.
 3. Abra o arquivo baixado. Se o Android pedir, permita
    **"Instalar apps desconhecidos"** para o navegador/gerenciador de arquivos.
 4. Abra o Godot. Quando ele pedir **"Acesso a todos os arquivos"**, permita
@@ -140,7 +140,7 @@ substituída pelo menu/fase nas próximas etapas.
 | Sintoma | Solução |
 |---|---|
 | Godot não mostra a pasta do projeto | Dê ao Godot a permissão **"Acesso a todos os arquivos"** (Configurações do Android → Apps → Godot → Permissões). |
-| "Projeto criado em versão mais nova/antiga" | Você está com outra versão do Godot. Instale o APK **4.3-stable** (passo 1). |
+| "Projeto criado em versão mais nova/antiga" | Você está com outra versão do Godot. Instale o APK **4.7.2-stable** (passo 1). |
 | Aparece "Nenhuma cena principal definida" | Configurações do Projeto → Aplicação → Executar → Cena Principal → escolha `scenes/main/main.tscn`. |
 | Jogo abre em pé | Confira **Orientação = Sensor Landscape**. Verifique também se o bloqueio de rotação do Android não está forçando retrato. |
 | Barras pretas nas laterais | Confira **Aspecto = expand**. |

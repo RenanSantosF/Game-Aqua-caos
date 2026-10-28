@@ -6,7 +6,7 @@
 |---|---|
 | Anúncio entre fases (a cada **2 fases**) | **AdMob real** |
 | Anúncio premiado (dobrar moedas, +50 moedas, skin por 3 dias) | **AdMob real** |
-| Compras com dinheiro (skins exclusivas e pacotes de moedas) | Simuladas (modo de teste) |
+| Compras com dinheiro (skins exclusivas e pacotes de moedas) | APK de teste: simuladas. Versão da loja: "Em breve" |
 
 ## Anúncios (AdMob)
 
@@ -78,8 +78,15 @@ No painel do AdMob, confira também:
 
 ## Compras (Google Play Billing), ainda simuladas
 
-Hoje as compras mostram uma tela "MODO DE TESTE" e liberam o item sem
-cobrar. **Antes de publicar** é preciso:
+Hoje as compras funcionam assim:
+
+- **APK de teste:** mostram uma tela "MODO DE TESTE" e liberam o item sem
+  cobrar.
+- **Versão da loja (AAB):** os pacotes de moedas somem e as skins
+  exclusivas aparecem como "Em breve". Isso é controlado por
+  `Monetization.purchases_available()`.
+
+Para cobrar de verdade é preciso:
 
 1. Usar o plugin **oficial** de pagamentos da Google Play para Godot
    (`godotengine/godot-google-play-billing`).

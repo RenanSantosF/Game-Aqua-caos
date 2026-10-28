@@ -1,6 +1,9 @@
 name: Build APK Android
 
-# Gera o APK de teste a cada push na main (ou manualmente em Actions → Run workflow).
+# A cada push na main (ou manualmente em Actions → Run workflow) gera:
+# - aqua-caos.apk: APK de teste, instala direto no celular;
+# - aqua-caos.aab: pacote assinado para enviar à Google Play
+#   (só quando o secret AAB_KEY_PASSWORD estiver configurado).
 on:
   push:
     branches: [main]
@@ -14,12 +17,15 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GODOT_VERSION: "4.3"
-  GODOT_RELEASE: "4.3-stable"
+  GODOT_RELEASE: "4.7.2-stable"
+  GODOT_TEMPLATES: "4.7.2.stable"
+  GODOT_SETTINGS: "4.7"
 
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      AAB_KEY_PASSWORD: ${{ secrets.AAB_KEY_PASSWORD }}
     steps:
       - name: Baixar o código
         uses: actions/checkout@v4
@@ -29,6 +35,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+
+      - name: Instalar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
 
       - name: Cache do Godot e dos templates
         id: cache
@@ -51,16 +62,16 @@ jobs:
           chmod +x ~/godot/godot
           wget -q -O /tmp/templates.tpz "$base/Godot_v${GODOT_RELEASE}_export_templates.tpz"
           unzip -q /tmp/templates.tpz -d /tmp/tpl
-          dest=~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          dest=~/.local/share/godot/export_templates/${GODOT_TEMPLATES}
           mkdir -p "$dest"
-          # Guarda só o que o Android precisa (o pacote completo tem ~1 GB).
+          # Guarda só o que o Android precisa (o pacote completo tem ~1,3 GB).
           cp /tmp/tpl/templates/android_* /tmp/tpl/templates/version.txt "$dest/"
           ls -la "$dest"
 
       - name: Configurar Android SDK, Java e keystore no Godot
         run: |
           mkdir -p ~/.config/godot
-          cat > ~/.config/godot/editor_settings-${GODOT_VERSION}.tres <<EOT
+          cat > ~/.config/godot/editor_settings-${GODOT_SETTINGS}.tres <<EOT
           [gd_resource type="EditorSettings" format=3]
 
           [resource]
@@ -70,12 +81,6 @@ jobs:
           export/android/debug_keystore_user = "androiddebugkey"
           export/android/debug_keystore_pass = "android"
           EOT
-          cat ~/.config/godot/editor_settings-${GODOT_VERSION}.tres
-
-      - name: Instalar Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.14.3"
 
       - name: Compilar o plugin de anúncios (AdMob)
         run: |
@@ -90,8 +95,8 @@ jobs:
           set -e
           rm -rf android
           mkdir -p android/build
-          unzip -q ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/android_source.zip -d android/build
-          echo -n "${GODOT_VERSION}.stable" > android/.build_version
+          unzip -q ~/.local/share/godot/export_templates/${GODOT_TEMPLATES}/android_source.zip -d android/build
+          echo -n "${GODOT_TEMPLATES}" > android/.build_version
           touch android/build/.gdignore
 
       - name: Numerar a versão com o número da execução
@@ -100,7 +105,7 @@ jobs:
       - name: Importar recursos do projeto
         run: ~/godot/godot --headless --import || true
 
-      - name: Exportar APK
+      - name: Exportar APK de teste
         env:
           GODOT_ANDROID_KEYSTORE_DEBUG_PATH: ${{ github.workspace }}/ci/debug.keystore
           GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
@@ -111,6 +116,21 @@ jobs:
           test -f build/aqua-caos.apk
           ls -la build
 
+      - name: Exportar AAB assinado (Google Play)
+        if: env.AAB_KEY_PASSWORD != ''
+        run: |
+          set -e
+          # A chave de upload fica criptografada no repositório; a senha vem do secret.
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in ci/upload.keystore.enc \
+            -out "$RUNNER_TEMP/upload.keystore" -pass env:AAB_KEY_PASSWORD
+          export GODOT_ANDROID_KEYSTORE_RELEASE_PATH="$RUNNER_TEMP/upload.keystore"
+          export GODOT_ANDROID_KEYSTORE_RELEASE_USER=aquacaos
+          export GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD="$AAB_KEY_PASSWORD"
+          ~/godot/godot --headless --export-release "Play Store" build/aqua-caos.aab
+          rm -f "$RUNNER_TEMP/upload.keystore"
+          test -f build/aqua-caos.aab
+          ls -la build
+
       - name: Enviar APK como artefato
         uses: actions/upload-artifact@v4
         with:
@@ -118,13 +138,27 @@ jobs:
           path: build/aqua-caos.apk
           retention-days: 30
 
-      - name: Publicar APK na release "apk-teste" (download fácil pelo celular)
+      - name: Enviar AAB como artefato
+        if: env.AAB_KEY_PASSWORD != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: aqua-caos-aab
+          path: build/aqua-caos.aab
+          retention-days: 30
+
+      - name: Publicar na release "apk-teste" (download fácil pelo celular)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          files="build/aqua-caos.apk"
+          notes="APK de teste gerado do commit ${GITHUB_SHA::7} (versão ${{ github.run_number }}). Baixe aqua-caos.apk e instale no Android."
+          if [ -f build/aqua-caos.aab ]; then
+            files="$files build/aqua-caos.aab"
+            notes="$notes O arquivo aqua-caos.aab é o pacote assinado para enviar à Google Play Console."
+          fi
           gh release delete apk-teste --yes --cleanup-tag || true
-          gh release create apk-teste build/aqua-caos.apk \
+          gh release create apk-teste $files \
             --target "${GITHUB_SHA}" \
             --prerelease \
             --title "APK de teste (build #${{ github.run_number }})" \
-            --notes "APK de teste gerado automaticamente do commit ${GITHUB_SHA::7}. Baixe o arquivo aqua-caos.apk abaixo e instale no Android."
+            --notes "$notes"

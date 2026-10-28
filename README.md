@@ -1,7 +1,7 @@
 # Aqua Caos: Desafio Molhado
 
 Corrida de obstáculos aquáticos em **3D** para celular, feita em
-**Godot 4.3** (GDScript) e desenvolvida pelo Android.
+**Godot 4.7.2** (GDScript) e desenvolvida pelo Android.
 
 Corra, pule, mergulhe e chegue primeiro!
 

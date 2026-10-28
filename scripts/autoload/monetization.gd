@@ -48,6 +48,12 @@ func _ready() -> void:
 		_ads.initialize(units.interstitial, units.rewarded)
 
 
+## Compras com dinheiro real só aparecem no APK de teste (simuladas) até o
+## Google Play Billing ser integrado. Na versão da loja ficam como "Em breve".
+func purchases_available() -> bool:
+	return OS.is_debug_build()
+
+
 func price_of(product: String) -> String:
 	return TEST_PRICES.get(product, "--")
 

@@ -1,15 +1,15 @@
 // Plugin Android do Godot (formato v2) que liga o jogo ao Google Mobile Ads (AdMob).
 // Gera aqua-ads.aar; o GitHub Actions copia para addons/aqua_ads/bin/.
 plugins {
-    id 'com.android.library' version '8.2.0'
+    id 'com.android.library' version '8.6.1'
 }
 
 android {
     namespace 'com.renansantosf.aquaads'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
-        minSdk 21
+        minSdk 24
     }
 
     compileOptions {
@@ -20,6 +20,6 @@ android {
 
 dependencies {
     // Fornecidos pelo jogo na exportação (o SDK de anúncios entra pelo addons/aqua_ads).
-    compileOnly 'org.godotengine:godot:4.3.0.stable'
-    compileOnly 'com.google.android.gms:play-services-ads:23.6.0'
+    compileOnly 'org.godotengine:godot:4.7.2.stable'
+    compileOnly 'com.google.android.gms:play-services-ads:25.5.0'
 }
