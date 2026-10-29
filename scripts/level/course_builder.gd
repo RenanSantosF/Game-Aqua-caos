@@ -11,10 +11,11 @@ extends RefCounted
 
 const WATER_Y := -1.2
 const FONT := preload("res://assets/fonts/LilitaOne-Regular.ttf")
+const FLOW_SHADER := preload("res://shaders/water_flow.gdshader")
 
 ## Fase mínima para cada tipo de trecho aparecer.
 const UNLOCK := {
-	"hops": 1, "sweeper": 1, "slide": 1,
+	"hops": 1, "sweeper": 1, "slide": 1, "stairs": 1, "waterslide": 1,
 	"hammers": 2, "moving": 2, "bounce": 2, "serpentine": 2,
 	"vanishing": 3, "logs": 3,
 	"pushers": 4, "fans": 4,
@@ -49,6 +50,7 @@ var pushers: Array[Pusher] = []
 
 var _color_index := 0
 var _yaw := 0.0
+var _flow_material: ShaderMaterial
 
 
 func build(parent: Node3D, level_number: int, theme: Dictionary) -> Dictionary:
@@ -84,11 +86,11 @@ func build(parent: Node3D, level_number: int, theme: Dictionary) -> Dictionary:
 func _plan() -> Array[String]:
 	match level:
 		1:
-			return ["hops", "curve", "sweeper", "slide", "curve", "hops"]
+			return ["hops", "stairs", "sweeper", "curve", "waterslide", "hops"]
 		2:
-			return ["hops", "serpentine", "hammers", "curve", "moving", "bounce"]
+			return ["hops", "waterslide", "hammers", "curve", "moving", "stairs", "bounce"]
 		3:
-			return ["vanishing", "curve", "logs", "sweeper", "serpentine", "hops", "hammers"]
+			return ["vanishing", "curve", "logs", "stairs", "sweeper", "serpentine", "hops", "hammers"]
 	var pool: Array[String] = []
 	for kind in UNLOCK:
 		if level >= UNLOCK[kind]:
@@ -186,6 +188,10 @@ func _pillars(bottom_center: Vector3, width: float) -> void:
 func _landing(length := 5.0, gap := 1.6) -> void:
 	var top := Vector3(0, y, z - gap - length * 0.5)
 	_platform(top, Vector3(10, 1, length))
+	# Às vezes um esguicho cruza por cima da plataforma.
+	if rng.randf() < 0.35:
+		var side := -1.0 if rng.randf() < 0.5 else 1.0
+		_jet(side, top + Vector3(side * 4.4, 0, 0), 8.8)
 	_coin_line(Vector3(0, y + 1.0, z - gap - 1.0), Vector3(0, y + 1.0, z - gap - length + 1.0), 3)
 	z -= gap + length
 	x = 0.0
@@ -219,7 +225,8 @@ func _sign(position: Vector3, key: String) -> void:
 
 
 ## Peça inclinada entre dois pontos (locais, centro do topo), com bordas.
-func _ramp_piece(from: Vector3, to: Vector3, width: float, color: Color, slippery: bool, rail_height: float) -> StaticBody3D:
+## hidden: só a colisão do piso (usado sob os degraus das escadas).
+func _ramp_piece(from: Vector3, to: Vector3, width: float, color: Color, slippery: bool, rail_height: float, hidden := false) -> StaticBody3D:
 	var thickness := 0.6
 	var direction := to - from
 	var length := direction.length() + 0.35
@@ -232,10 +239,11 @@ func _ramp_piece(from: Vector3, to: Vector3, width: float, color: Color, slipper
 	box.size = Vector3(width, thickness, length)
 	shape.shape = box
 	body.add_child(shape)
-	Build.box(body, Vector3(width, thickness, length), color, Vector3.ZERO, true)
+	if not hidden:
+		Build.box(body, Vector3(width, thickness, length), color, Vector3.ZERO, true)
 	if slippery:
 		body.add_to_group("slippery")
-		Build.box(body, Vector3(width * 0.8, 0.04, length), Color("81d4fa"), Vector3(0, thickness * 0.5 + 0.01, 0))
+		_flowing_water(body, Vector3(width * 0.85, 0.04, length), Vector3(0, thickness * 0.5 + 0.02, 0))
 	if rail_height > 0.0:
 		for side in [-1.0, 1.0]:
 			var rail_shape := CollisionShape3D.new()
@@ -246,6 +254,95 @@ func _ramp_piece(from: Vector3, to: Vector3, width: float, color: Color, slipper
 			body.add_child(rail_shape)
 			Build.box(body, Vector3(0.3, rail_height, length), Color("fdd835"), rail_shape.position)
 	return body
+
+
+## Lâmina de água descendo a rampa (espuma animada).
+func _flowing_water(parent: Node3D, size: Vector3, position: Vector3) -> void:
+	if _flow_material == null:
+		_flow_material = ShaderMaterial.new()
+		_flow_material.shader = FLOW_SHADER
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	var water := MeshInstance3D.new()
+	water.mesh = mesh
+	water.material_override = _flow_material
+	water.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	water.position = position
+	parent.add_child(water)
+
+
+## Anel colorido em volta do toboágua (cara de tubo, sem tampar a visão).
+func _tube_ring(from: Vector3, to: Vector3, width: float, color: Color) -> void:
+	var ring := Build.torus(root, width * 0.5 + 0.55, width * 0.5 + 0.85, color, (from + to) * 0.5)
+	var forward := (to - from).normalized()
+	ring.basis = Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.RIGHT, PI * 0.5)
+	ring.position += Vector3.UP * (width * 0.5 + 0.1)
+	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+
+## Respingo contínuo (saída de toboágua, chafarizes). Desligado nos gráficos leves.
+func _splash_fx(position: Vector3, amount := 16, strength := 1.0) -> void:
+	if Game.low_graphics():
+		return
+	var particles := CPUParticles3D.new()
+	var drop := SphereMesh.new()
+	drop.radius = 0.09
+	drop.height = 0.18
+	drop.radial_segments = 6
+	drop.rings = 3
+	drop.material = Mat.unshaded(Color("e1f5fe"))
+	particles.mesh = drop
+	particles.amount = amount
+	particles.lifetime = 0.9
+	particles.direction = Vector3.UP
+	particles.spread = 35.0
+	particles.initial_velocity_min = 2.5 * strength
+	particles.initial_velocity_max = 5.0 * strength
+	particles.gravity = Vector3(0, -12, 0)
+	particles.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	particles.emission_sphere_radius = 0.7
+	particles.scale_amount_min = 0.6
+	particles.scale_amount_max = 1.5
+	particles.position = position
+	root.add_child(particles)
+
+
+## Balde gigante que enche e vira (enfeite). "yaw" aponta a cascata.
+func _bucket(position: Vector3, yaw: float) -> void:
+	var bucket := TippingBucket.new()
+	bucket.color = _next_color()
+	bucket.position = position
+	bucket.rotation.y = yaw
+	bucket.scale = Vector3.ONE * 1.3
+	root.add_child(bucket)
+
+
+## Esguicho: jato de água em arco que cruza por cima do percurso (enfeite).
+func _jet(side: float, position: Vector3, reach: float) -> void:
+	var nozzle := Build.cylinder(root, 0.25, 0.9, Color("eceff1"), position + Vector3(0, 0.45, 0), 0.15, true)
+	Build.sphere(nozzle, 0.22, _next_color(), Vector3(0, 0.5, 0))
+	if Game.low_graphics():
+		return
+	var stream := CPUParticles3D.new()
+	var drop := SphereMesh.new()
+	drop.radius = 0.11
+	drop.height = 0.22
+	drop.radial_segments = 6
+	drop.rings = 3
+	drop.material = Mat.unshaded(Color(0.7, 0.92, 1.0, 0.9))
+	stream.mesh = drop
+	stream.amount = 36
+	stream.lifetime = 1.4
+	stream.direction = Vector3(-side, 1.15, 0).normalized()
+	stream.spread = 3.0
+	var speed := sqrt(reach * 9.8 / 0.98)
+	stream.initial_velocity_min = speed * 0.97
+	stream.initial_velocity_max = speed * 1.03
+	stream.gravity = Vector3(0, -9.8, 0)
+	stream.scale_amount_min = 0.8
+	stream.scale_amount_max = 1.3
+	stream.position = position + Vector3(0, 1.0, 0)
+	root.add_child(stream)
 
 
 ## Rampa reta. drop > 0 desce, drop < 0 sobe. Começa na borda "z" atual.
@@ -261,7 +358,7 @@ func _slope(length: float, drop: float, width: float, slippery: bool, color: Col
 
 ## Arco (curva) a partir da borda atual. Gira o referencial no final.
 ## turn: +1 esquerda, -1 direita. drop: quanto desce ao longo do arco.
-func _arc(radius: float, angle: float, turn: float, width: float, drop: float, slippery: bool, rail_height: float, color: Color) -> void:
+func _arc(radius: float, angle: float, turn: float, width: float, drop: float, slippery: bool, rail_height: float, color: Color, tube := false) -> void:
 	var steps := maxi(4, int(angle / deg_to_rad(11.0)))
 	var start_y := y
 	var origin := Vector3(0, 0, z)
@@ -271,6 +368,8 @@ func _arc(radius: float, angle: float, turn: float, width: float, drop: float, s
 		var point := origin + Vector3(turn * (-radius + radius * cos(phi)), start_y - drop * (i + 1) / steps, -radius * sin(phi))
 		_ramp_piece(previous, point, width, color if i % 2 == 0 else color.lightened(0.15), slippery, rail_height)
 		_waypoint((previous + point) * 0.5)
+		if tube and i % 2 == 1:
+			_tube_ring(previous, point, width, color.lightened(0.35))
 		if i % 2 == 0:
 			_pillars(Vector3(point.x, point.y - 0.6, point.z), width * 0.5)
 		if i % 2 == 1:
@@ -293,6 +392,7 @@ func _start() -> void:
 	Build.box(root, Vector3(10.6, 1.1, 0.5), palette[1], Vector3(0, 4.8, -3.0), true)
 	_sign(Vector3(0, 4.8, -2.7), "SIGN_START")
 	_coin_line(Vector3(0, 1.0, -6.0), Vector3(0, 1.0, -10.5), 3)
+	_bucket(Vector3(-8.0, 0, -15.0), PI * 0.5)
 	z = -12.0
 	y = 0.0
 	par_time += 2.0
@@ -315,6 +415,9 @@ func _finish() -> void:
 	finish_gate = FinishGate.new()
 	finish_gate.position = Vector3(0, y, z - 5.0)
 	root.add_child(finish_gate)
+	_bucket(Vector3(10.5, y, z - 13.0), -PI * 0.5)
+	for side in [-1.0, 1.0]:
+		_jet(side, Vector3(side * 6.4, y, z - 2.0), 12.0)
 	z -= 16.0
 	par_time += 5.0 / 7.0
 
@@ -325,8 +428,9 @@ func _seg_curve() -> void:
 	var angle := deg_to_rad(rng.randf_range(40.0, 80.0))
 	var turn := _turn_sign(angle)
 	var width := lerpf(5.0, 3.6, difficulty)
-	var drop := rng.randf_range(-0.6, 0.9) if level > 2 else 0.0
-	drop = clampf(drop, y - 2.5, y + 0.4)
+	# Curvas sobem e descem bastante (até ~4 m de altura).
+	var drop := rng.randf_range(-1.8, 1.4) if level > 1 else 0.0
+	drop = clampf(drop, y - 4.0, y + 0.4)
 	_arc(rng.randf_range(8.0, 12.0), angle, turn, width, drop, false, 0.0, _next_color())
 
 
@@ -513,6 +617,111 @@ func _seg_slide() -> void:
 	_landing(8.0, 4.0)
 
 
+## Escada de verdade: degraus coloridos com corrimão. A colisão é uma rampa
+## invisível por baixo, então dá para subir andando (sem pular cada degrau).
+func _stairs(rise: float, width: float) -> void:
+	var steps := maxi(4, int(rise / 0.32))
+	var step_h := rise / steps
+	var step_d := 0.6
+	var color := _next_color()
+	for i in steps:
+		var top := y + step_h * (i + 1)
+		var height := top - y + 0.8
+		var tread := color if i % 2 == 0 else color.lightened(0.25)
+		Build.box(root, Vector3(width, height, step_d), tread, Vector3(0, top - height * 0.5, z - step_d * (i + 0.5)), i % 3 == 0)
+		Build.box(root, Vector3(width + 0.04, 0.08, 0.14), Color.WHITE, Vector3(0, top - 0.02, z - step_d * i - 0.08))
+		if i % 3 == 1:
+			_coin(Vector3(0, top + 1.0, z - step_d * (i + 0.5)))
+	var run := steps * step_d
+	var from := Vector3(0, y, z + step_d * 0.5)
+	var to := Vector3(0, y + rise, z - run + step_d * 0.5)
+	_ramp_piece(from, to, width, color, false, 0.0, true)
+	# Corrimãos (só enfeite) e pilares embaixo.
+	for side in [-1.0, 1.0]:
+		var rail := Node3D.new()
+		var mid := (from + to) * 0.5 + Vector3(side * (width * 0.5 - 0.1), 1.05, 0)
+		rail.transform = Transform3D(Basis.looking_at((to - from).normalized(), Vector3.UP), mid)
+		root.add_child(rail)
+		Build.box(rail, Vector3(0.14, 0.14, (to - from).length()), Color("fdd835"))
+		for k in 4:
+			var t := (k + 0.5) / 4.0
+			var post := from.lerp(to, t) + Vector3(side * (width * 0.5 - 0.1), 0.5, 0)
+			Build.cylinder(root, 0.06, 1.1, Color("eceff1"), post)
+	_pillars(Vector3(0, y - 0.8, z - run * 0.5), width)
+	_waypoint((from + to) * 0.5)
+	z -= run
+	y += rise
+	par_time += run / 4.0
+
+
+func _seg_stairs() -> void:
+	# Escadaria: sobe bem alto pelos degraus e desce escorregando.
+	var rise := rng.randf_range(2.8, 3.6) + difficulty * 1.2
+	var width := 5.0
+	_platform(Vector3(0, y, z - 1.5), Vector3(width + 1.0, 1, 3))
+	z -= 3.0
+	if level <= 3:
+		_sign(Vector3(0, y + 2.4, z + 0.5), "SIGN_STAIRS")
+	_stairs(rise, width)
+	# Mirante no topo, com bandeirinhas.
+	_platform(Vector3(0, y, z - 2.0), Vector3(width + 1.0, y + 2.0, 4), Color(0, 0, 0, 0), false, false)
+	for side in [-1.0, 1.0]:
+		Build.cylinder(root, 0.08, 2.4, Color("eceff1"), Vector3(side * (width * 0.5 + 0.2), y + 1.2, z - 2.0))
+		Build.box(root, Vector3(0.05, 0.5, 0.8), _next_color(), Vector3(side * (width * 0.5 + 0.2), y + 2.1, z - 2.4))
+	_coin_line(Vector3(-1.2, y + 1.0, z - 2.0), Vector3(1.2, y + 1.0, z - 2.0), 3)
+	z -= 4.0
+	# Descida molhada grande, mais baixa que o começo.
+	var drop := clampf(rise + rng.randf_range(0.0, 0.8), 0.0, y + 0.2)
+	var length := drop * 3.2 + 4.0
+	_slope(length, drop, width, true, _next_color())
+	_coin_line(Vector3(0, y + 0.7, z - 2.0), Vector3(0, y - drop + 0.9, z - length + 1.5), 4)
+	z -= length
+	y -= drop
+	_splash_fx(Vector3(0, y + 0.2, z - 1.0), 12, 0.8)
+	par_time += 4.0 / 6.0 + length / 9.0
+	_landing(6.0, 0.0)
+
+
+func _seg_waterslide() -> void:
+	# Toboágua: torre alta com escada e um tubo colorido cheio de curvas e
+	# água correndo, que termina numa piscina de respingos.
+	var height := 4.6 + difficulty * 2.4
+	var width := 3.6
+	_platform(Vector3(0, y, z - 1.5), Vector3(width + 2.0, 1, 3))
+	z -= 3.0
+	_stairs(height, width)
+	# Topo da torre com cobertura listrada.
+	var top_z := z - 2.0
+	_platform(Vector3(0, y, top_z), Vector3(width + 2.0, y + 2.4, 4), Color(0, 0, 0, 0), false, false)
+	var roof_color := _next_color()
+	for cx in [-1.0, 1.0]:
+		for cz in [-1.0, 1.0]:
+			Build.cylinder(root, 0.12, 2.9, Color("eceff1"), Vector3(cx * (width * 0.5 + 0.7), y + 1.45, top_z + cz * 1.6))
+	for i in 5:
+		var stripe := roof_color if i % 2 == 0 else Color.WHITE
+		Build.box(root, Vector3(width + 2.2, 0.18, 0.84), stripe, Vector3(0, y + 3.0, top_z - 1.68 + i * 0.84), i == 2)
+	if level <= 4:
+		_sign(Vector3(0, y + 3.6, top_z), "SIGN_WATERSLIDE")
+	z -= 4.0
+	# Tubo: curvas alternadas que descem toda a altura da torre.
+	var bends := 3 + (1 if difficulty > 0.5 else 0)
+	var total_drop := clampf(height + 0.3, 0.0, y + 0.2)
+	var color := _next_color()
+	var turn := _turn_sign(deg_to_rad(60.0))
+	for i in bends:
+		var angle := deg_to_rad(rng.randf_range(55.0, 75.0))
+		_arc(rng.randf_range(6.5, 8.5), angle, turn, width, total_drop / bends, true, 1.5, color, true)
+		turn = -turn
+	# Piscina de respingos na saída.
+	_platform(Vector3(0, y, z - 2.5), Vector3(6, 1, 5), Color("4fc3f7"), true)
+	_splash_fx(Vector3(0, y + 0.2, z - 0.8), 22, 1.0)
+	for side in [-1.0, 1.0]:
+		Build.torus(root, 0.35, 0.6, Color("ef5350") if side < 0 else Color("ffca28"), Vector3(side * 2.2, y + 0.15, z - 3.2))
+	z -= 5.0
+	par_time += height / 2.2 + 4.0 / 6.0 + bends * 1.8
+	_landing(6.0, 0.0)
+
+
 func _seg_ramp() -> void:
 	# Rampa de salto: corre, decola e voa por cima de um vão enorme.
 	_platform(Vector3(0, y, z - 3.0), Vector3(5, 1, 6))
@@ -605,7 +814,8 @@ func _seg_logs() -> void:
 		par_time += 1.0
 	if level <= 4:
 		_sign(Vector3(0, y + 2.6, z + count * 2.5), "SIGN_LOGS")
-	_landing(5.0, 1.2)
+	# Plataforma encostada no último rolo: quem pula correndo não cai no vão.
+	_landing(5.0, 0.3)
 
 
 func _seg_drum() -> void:

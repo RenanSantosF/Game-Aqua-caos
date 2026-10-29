@@ -34,6 +34,9 @@ var _theme: Dictionary
 var _builder: CourseBuilder
 var _player_tracker: PathTracker
 var _bot_trackers: Array[PathTracker] = []
+## Medição de FPS no começo da corrida (modo gráfico automático).
+var _fps_time := 0.0
+var _fps_frames := 0
 
 
 func _ready() -> void:
@@ -84,6 +87,18 @@ func _process(delta: float) -> void:
 	camera.path_yaw = lerp_angle(camera.path_yaw, target_yaw, minf(1.0, 2.5 * delta))
 	if running:
 		hud.set_rank(_current_rank(progress), bots.size() + 1)
+		_watch_fps(delta)
+
+
+## Se o celular não aguenta (FPS baixo), troca sozinho para gráficos leves.
+func _watch_fps(delta: float) -> void:
+	if Game.graphics != "auto" or Game.low_graphics() or elapsed < 2.0 or _fps_time > 6.0:
+		return
+	_fps_time += delta
+	_fps_frames += 1
+	if _fps_time > 6.0 and _fps_frames / _fps_time < 26.0:
+		Game.mark_slow_device()
+		Game.apply_graphics(get_viewport(), sun)
 
 
 func _current_rank(progress: float) -> int:
@@ -177,6 +192,7 @@ func _on_finish(_body: Node3D) -> void:
 
 func _setup_environment() -> void:
 	WorldSetup.apply_environment(world_environment, sun, _theme)
+	Game.apply_graphics(get_viewport(), sun)
 
 
 func _setup_water() -> void:

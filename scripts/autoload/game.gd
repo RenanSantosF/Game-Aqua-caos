@@ -10,6 +10,8 @@ const MENU_SCENE := "res://scenes/menu/menu.tscn"
 const MAP_SCENE := "res://scenes/map/map.tscn"
 const LEVEL_SCENE := "res://scenes/levels/level.tscn"
 const LANGUAGES := ["pt_BR", "en", "es"]
+## Qualidade gráfica: automática, alta ou leve (para celulares fracos).
+const GRAPHICS := ["auto", "high", "low"]
 ## Mostra um anúncio entre fases a cada N fases concluídas.
 const INTERSTITIAL_EVERY := 2
 
@@ -21,6 +23,9 @@ var stars: Dictionary = {}       # "12" -> 0..3
 var sound_enabled := true
 var music_enabled := true
 var language := ""
+var graphics := "auto"
+## No modo automático: o jogo percebeu que o aparelho é fraco (FPS baixo).
+var slow_device := false
 var equipped_skin := "classic"
 var owned_skins: Array = ["classic"]
 var rented_skins: Dictionary = {}  # id -> horário (unix) em que expira
@@ -34,6 +39,7 @@ var just_completed := 0
 func _ready() -> void:
 	load_game()
 	_apply_language()
+	Mat.outlines = not low_graphics()
 	_check_rentals()
 
 
@@ -54,6 +60,8 @@ func load_game() -> void:
 	sound_enabled = cfg.get_value("config", "som", true)
 	music_enabled = cfg.get_value("config", "musica", true)
 	language = cfg.get_value("config", "idioma", "")
+	graphics = cfg.get_value("config", "graficos", "auto")
+	slow_device = cfg.get_value("config", "aparelho_lento", false)
 	daily_last = cfg.get_value("diario", "ultimo", "")
 	daily_streak = cfg.get_value("diario", "sequencia", 0)
 
@@ -71,6 +79,8 @@ func save_game() -> void:
 	cfg.set_value("config", "som", sound_enabled)
 	cfg.set_value("config", "musica", music_enabled)
 	cfg.set_value("config", "idioma", language)
+	cfg.set_value("config", "graficos", graphics)
+	cfg.set_value("config", "aparelho_lento", slow_device)
 	cfg.set_value("diario", "ultimo", daily_last)
 	cfg.set_value("diario", "sequencia", daily_streak)
 	cfg.save(SAVE_PATH)
@@ -277,6 +287,49 @@ func set_music_enabled(enabled: bool) -> void:
 	music_enabled = enabled
 	save_game()
 	Music.refresh()
+
+
+# --- Gráficos -------------------------------------------------------------------------------
+
+## Gráficos leves: sem sombras, sem contornos, menos cenário e resolução 3D menor.
+func low_graphics() -> bool:
+	match graphics:
+		"low":
+			return true
+		"high":
+			return false
+	return slow_device or _weak_hardware()
+
+
+## Celular com pouca memória: começa direto no modo leve.
+func _weak_hardware() -> bool:
+	if not OS.has_feature("mobile"):
+		return false
+	var physical: int = OS.get_memory_info().get("physical", 0)
+	return physical > 0 and physical < 3_500_000_000
+
+
+func set_graphics(mode: String) -> void:
+	graphics = mode
+	Mat.outlines = not low_graphics()
+	save_game()
+
+
+## Chamado pela fase quando o FPS fica baixo no modo automático.
+func mark_slow_device() -> void:
+	if slow_device:
+		return
+	slow_device = true
+	Mat.outlines = not low_graphics()
+	save_game()
+
+
+## Aplica a qualidade na cena 3D atual (sol e resolução).
+func apply_graphics(viewport: Viewport, sun: DirectionalLight3D) -> void:
+	var low := low_graphics()
+	if sun:
+		sun.shadow_enabled = not low
+	viewport.scaling_3d_scale = 0.75 if low else 1.0
 
 
 # --- Navegação --------------------------------------------------------------------------------

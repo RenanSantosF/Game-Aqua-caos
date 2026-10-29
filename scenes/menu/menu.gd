@@ -15,6 +15,7 @@ var _ui: Control
 func _ready() -> void:
 	var theme := Themes.for_level(1)
 	WorldSetup.apply_environment($WorldEnvironment, $Sun, theme)
+	Game.apply_graphics(get_viewport(), $Sun)
 	WorldSetup.add_water(self, theme, Vector3.ZERO, Vector2(240, 240))
 	var route: Array[Vector3] = []
 	for i in 48:
@@ -194,7 +195,9 @@ func _show_settings() -> void:
 	var sound := UiKit.button("", "blue", 30)
 	var music := UiKit.button("", "blue", 30)
 	var language := UiKit.button("", "purple", 30)
+	var graphics := UiKit.button("", "green", 30)
 	var refresh := func():
+		graphics.text = tr("SETTINGS_GRAPHICS") % tr("GFX_" + Game.graphics.to_upper())
 		sound.text = tr("SETTINGS_SOUND") % tr("ON" if Game.sound_enabled else "OFF")
 		music.text = tr("SETTINGS_MUSIC") % tr("ON" if Game.music_enabled else "OFF")
 		language.text = tr("SETTINGS_LANGUAGE") % tr("LANG_NAME")
@@ -207,7 +210,13 @@ func _show_settings() -> void:
 		Transition.change_scene(Game.MENU_SCENE))
 	column.add_child(sound)
 	column.add_child(music)
+	graphics.pressed.connect(func():
+		var index := Game.GRAPHICS.find(Game.graphics)
+		Game.set_graphics(Game.GRAPHICS[(index + 1) % Game.GRAPHICS.size()])
+		Game.apply_graphics(get_viewport(), $Sun)
+		refresh.call())
 	column.add_child(language)
+	column.add_child(graphics)
 	var close := UiKit.button(tr("BTN_CLOSE"), "yellow", 30)
 	close.pressed.connect(func(): column.get_parent().get_parent().get_parent().queue_free())
 	column.add_child(close)

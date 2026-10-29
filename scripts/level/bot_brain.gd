@@ -22,6 +22,7 @@ var _jump_cooldown := 0.0
 var _resync := false
 var _last_fall_index := -100
 var _repeat_falls := 0
+var _floor_wait := 0.0
 
 
 func _init(builder: CourseBuilder, skill: float, seed_value: int) -> void:
@@ -115,6 +116,15 @@ func think(player: Player, delta: float) -> void:
 	if not player.is_on_floor():
 		return
 
+	# O piso do próximo ponto sumiu (piso que cai, plataforma que saiu)?
+	# Espera um pouco ele voltar em vez de pular no buraco.
+	if to_target.length() < 3.5 and _floor_wait < 4.0 and not _floor_at(player, target):
+		_floor_wait += delta
+		move = Vector3.ZERO
+		return
+	if _floor_wait > 0.0 and _floor_at(player, target):
+		_floor_wait = 0.0
+
 	# Pula o bastão giratório quando ele se aproxima.
 	for sweeper in _builder.sweepers:
 		var rel := pos - sweeper.global_position
@@ -158,6 +168,12 @@ func think(player: Player, delta: float) -> void:
 		_wait = 0.0
 	if gap or wall:
 		_jump()
+
+
+func _floor_at(player: Player, point: Vector3) -> bool:
+	var space := player.get_world_3d().direct_space_state
+	var from := point + Vector3.UP * 2.5
+	return not space.intersect_ray(PhysicsRayQueryParameters3D.create(from, from + Vector3.DOWN * 4.5, 1)).is_empty()
 
 
 func _jump() -> void:

@@ -41,8 +41,9 @@ static func add_water(parent: Node3D, theme: Dictionary, center: Vector3, size: 
 	var plane := PlaneMesh.new()
 	plane.size = size
 	# Ondas precisam de vértices; limitado para não pesar no celular.
-	plane.subdivide_width = clampi(int(size.x / 5.0), 8, 90)
-	plane.subdivide_depth = clampi(int(size.y / 5.0), 8, 110)
+	var detail := 0.35 if Game.low_graphics() else 1.0
+	plane.subdivide_width = clampi(int(size.x / 5.0 * detail), 8, 90)
+	plane.subdivide_depth = clampi(int(size.y / 5.0 * detail), 8, 110)
 	var material := ShaderMaterial.new()
 	material.shader = WATER_SHADER
 	material.set_shader_parameter("deep_color", theme.water_deep)

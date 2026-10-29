@@ -39,11 +39,11 @@ número inteiro do Godot, mais de 2 bilhões de fases. Os rivais conseguem
 terminar as fases nos testes automáticos, o que mostra que os percursos
 são possíveis de completar.
 
-### Tipos de trecho (20)
+### Tipos de trecho (22)
 
 | Fase em que aparece | Trechos |
 |---|---|
-| 1 | pulos entre plataformas, bastão giratório, escorregador, curvas |
+| 1 | pulos entre plataformas, bastão giratório, escorregador, curvas, **escadaria** (sobe alto e desce escorregando), **toboágua** (torre, tubo com água correndo e curvas) |
 | 2 | martelos em pêndulo, plataformas móveis, boias trampolim, tobogã em zigue-zague |
 | 3 | piso que cai, troncos rolantes |
 | 4 | paredes que dão soco, ventiladores de vento |
@@ -92,12 +92,15 @@ Os textos ficam em `assets/i18n/strings.csv`, uma coluna por idioma.
 
 ## Gráficos
 
-- Sombras com mapa de 4096 (2048 no celular), filtro suave e alcance
-  menor. Isso deixa a sombra mais nítida e sem serrilhado.
-- Antisserrilhado MSAA 4x.
-- Em celulares muito fracos, desligue as sombras: em
-  `scripts/world/world_setup.gd`, troque `sun.shadow_enabled = true` por
-  `false`.
+- **Ajustes → Gráficos:** Automático, Altos ou Leves.
+  - **Leves:** sem sombras e sem contornos, menos cenário, água mais
+    simples e resolução 3D de 75%. É para celulares fracos.
+  - **Automático:** começa no modo leve em celulares com menos de 3,5 GB
+    de memória. Também troca sozinho se a corrida ficar abaixo de 26 FPS
+    nos primeiros segundos.
+- No celular o antisserrilhado MSAA fica desligado: em algumas GPUs fracas
+  ele impedia o 3D de aparecer.
+- No PC: sombras com mapa de 4096 e MSAA 4x.
 
 ## Estrutura
 

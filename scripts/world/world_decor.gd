@@ -22,17 +22,19 @@ func build(theme: Dictionary, route: Array[Vector3], start: Transform3D, finish:
 	_theme = theme
 	_rng.seed = seed_value
 	_route = route
-	var samples := _samples(22.0)
+	# Gráficos leves: cenário mais espaçado (menos objetos para desenhar).
+	var spread := 2.0 if Game.low_graphics() else 1.0
+	var samples := _samples(22.0 * spread)
 	_build_islands(samples)
 	_build_towers(samples)
-	_build_buoys(_samples(9.0))
+	_build_buoys(_samples(9.0 * spread))
 	_build_clouds()
 	_build_birds(samples)
 	_build_dolphins(samples)
 	_build_stands(start * Transform3D(Basis(), Vector3(0, 0, -4.0)), 13.0)
 	_build_stands(finish, 13.0)
 	if theme.get("night", false):
-		_build_lights(_samples(12.0))
+		_build_lights(_samples(12.0 * spread))
 
 
 ## Pontos da rota a cada "spacing" metros, com a direção local.

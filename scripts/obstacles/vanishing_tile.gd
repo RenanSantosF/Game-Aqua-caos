@@ -5,7 +5,7 @@ extends StaticBody3D
 @export var size := Vector3(2.2, 0.5, 2.2)
 @export var color := Color("ec407a")
 @export var warn_time := 0.5
-@export var gone_time := 3.0
+@export var gone_time := 2.4
 
 enum TileState { SOLID, WARNING, GONE }
 

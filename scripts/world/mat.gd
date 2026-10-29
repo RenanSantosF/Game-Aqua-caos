@@ -3,10 +3,13 @@ class_name Mat
 ## Reaproveitar materiais deixa o jogo mais leve no celular.
 
 static var _cache: Dictionary = {}
+## Contornos desligados no modo de gráficos leves (desenham tudo duas vezes).
+static var outlines := true
 
 
 ## Material "toon" (sombreamento em degraus, estilo desenho animado).
 static func toon(color: Color, outlined := false) -> StandardMaterial3D:
+	outlined = outlined and outlines
 	var key := "toon_%s_%s" % [color.to_html(), outlined]
 	if _cache.has(key):
 		return _cache[key]

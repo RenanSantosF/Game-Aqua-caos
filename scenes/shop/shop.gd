@@ -13,6 +13,8 @@ var _grid: GridContainer
 var _cards: Dictionary = {}
 var _toast: Label
 var _tab := "skins"
+var _press_position := Vector2.ZERO
+var _press_scroll := 0
 var _list_holder: ScrollContainer
 
 
@@ -74,7 +76,9 @@ func _build() -> void:
 	var viewport := SubViewport.new()
 	viewport.own_world_3d = true
 	viewport.transparent_bg = true
-	viewport.msaa_3d = Viewport.MSAA_4X
+	# MSAA quebra o 3D em algumas GPUs fracas de celular.
+	if not OS.has_feature("mobile"):
+		viewport.msaa_3d = Viewport.MSAA_4X
 	view_container.add_child(viewport)
 	_build_preview(viewport)
 	_name_label = UiKit.label("", 34, Color("ffd54f"), 10)
@@ -102,6 +106,7 @@ func _build() -> void:
 	_list_holder = ScrollContainer.new()
 	_list_holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_list_holder.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_list_holder.scroll_deadzone = 10
 	right.add_child(_list_holder)
 
 	_toast = UiKit.label("", 34, Color("ffd54f"), 12)
@@ -185,7 +190,10 @@ func _pop_later(control: Control, delay: float) -> void:
 
 func _skin_card(skin: Dictionary, card_size: Vector2) -> Button:
 	var card := UiKit.button("", "blue", 20, card_size)
-	card.pressed.connect(_select.bind(skin.id))
+	# O toque passa para a lista (dá para rolar arrastando em cima do cartão);
+	# só escolhe a skin se o dedo soltar sem ter arrastado.
+	card.mouse_filter = Control.MOUSE_FILTER_PASS
+	card.gui_input.connect(_on_card_input.bind(skin.id))
 	var column := VBoxContainer.new()
 	column.set_anchors_preset(Control.PRESET_FULL_RECT)
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -203,6 +211,26 @@ func _skin_card(skin: Dictionary, card_size: Vector2) -> Button:
 	tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(tag)
 	return card
+
+
+func _on_card_input(event: InputEvent, id: String) -> void:
+	var touch := event as InputEventScreenTouch
+	var click := event as InputEventMouseButton
+	var pressed: bool
+	var position: Vector2
+	if touch:
+		pressed = touch.pressed
+		position = touch.position
+	elif click and click.button_index == MOUSE_BUTTON_LEFT:
+		pressed = click.pressed
+		position = click.global_position
+	else:
+		return
+	if pressed:
+		_press_position = position
+		_press_scroll = _list_holder.scroll_vertical
+	elif position.distance_to(_press_position) < 24.0 and absi(_list_holder.scroll_vertical - _press_scroll) < 12:
+		_select(id)
 
 
 # --- Lógica ----------------------------------------------------------------------------
