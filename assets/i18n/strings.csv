@@ -51,6 +51,7 @@ RESULT_COINS_COLLECTED,Moedas coletadas: %d,Coins collected: %d,Monedas recogida
 RESULT_FINISH_BONUS,Chegada: +%d,Finish: +%d,Llegada: +%d
 RESULT_NO_FALL_BONUS,Sem cair: +%d,No falls: +%d,Sin caer: +%d
 RESULT_PLACE_BONUS,%s lugar: +%d,%s place: +%d,%s lugar: +%d
+RESULT_REPLAY,Fase repetida: metade das moedas,Replayed level: half the coins,Nivel repetido: mitad de las monedas
 RESULT_TOTAL,+%d MOEDAS,+%d COINS,+%d MONEDAS
 RESULT_DOUBLE,DOBRAR (ANÚNCIO),DOUBLE (AD),DUPLICAR (ANUNCIO)
 MAP_TITLE,MAPA DE AVENTURAS,ADVENTURE MAP,MAPA DE AVENTURAS

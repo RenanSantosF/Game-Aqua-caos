@@ -30,11 +30,15 @@ func show_result(level: int, level_name: String, time: float, falls: int, place:
 	%NewRecordLabel.visible = result.get("new_record", false)
 	%FallsLabel.text = tr("RESULT_FALLS") % falls
 	var lines := tr("RESULT_COINS_COLLECTED") % result.coins_collected
-	lines += "\n" + tr("RESULT_FINISH_BONUS") % result.finish_bonus
+	# Bônus numa linha só, para o painel caber em telas baixas.
+	var bonuses: Array[String] = [tr("RESULT_FINISH_BONUS") % result.finish_bonus]
 	if result.no_fall_bonus > 0:
-		lines += "\n" + tr("RESULT_NO_FALL_BONUS") % result.no_fall_bonus
+		bonuses.append(tr("RESULT_NO_FALL_BONUS") % result.no_fall_bonus)
 	if result.place_bonus > 0:
-		lines += "\n" + tr("RESULT_PLACE_BONUS") % [Themes.ordinal(place), result.place_bonus]
+		bonuses.append(tr("RESULT_PLACE_BONUS") % [Themes.ordinal(place), result.place_bonus])
+	lines += "\n" + "  ·  ".join(bonuses)
+	if result.get("replay", false):
+		lines += "\n" + tr("RESULT_REPLAY")
 	%CoinsDetail.text = lines
 	%CoinsTotal.text = tr("RESULT_TOTAL") % result.coins_total
 	%DoubleButton.visible = true

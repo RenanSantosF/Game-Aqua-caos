@@ -12,23 +12,23 @@ const RENT_DAYS := 3
 const LIST := [
 	{"id": "classic", "name": "SKIN_CLASSIC", "unlock": "free",
 		"colors": {"body": Color("ff7043"), "belly": Color("fff3e0"), "cap": Color("1e88e5")}, "extras": ["cap"]},
-	{"id": "splash", "name": "SKIN_SPLASH", "unlock": "coins", "price": 150,
+	{"id": "splash", "name": "SKIN_SPLASH", "unlock": "coins", "price": 400,
 		"colors": {"body": Color("29b6f6"), "belly": Color("e1f5fe"), "cap": Color("ffca28")}, "extras": ["cap"]},
-	{"id": "melon", "name": "SKIN_MELON", "unlock": "coins", "price": 250,
+	{"id": "melon", "name": "SKIN_MELON", "unlock": "coins", "price": 700,
 		"colors": {"body": Color("43a047"), "belly": Color("ef5350"), "cap": Color("2e7d32")}, "extras": ["seeds"]},
-	{"id": "frog", "name": "SKIN_FROG", "unlock": "coins", "price": 350,
+	{"id": "frog", "name": "SKIN_FROG", "unlock": "coins", "price": 1000,
 		"colors": {"body": Color("7cb342"), "belly": Color("f0f4c3"), "cap": Color("558b2f")}, "extras": ["frog_eyes"]},
 	{"id": "duck", "name": "SKIN_DUCK", "unlock": "ad",
 		"colors": {"body": Color("ffd54f"), "belly": Color("fff8e1"), "cap": Color("ff8f00")}, "extras": ["beak", "float_ring"]},
-	{"id": "penguin", "name": "SKIN_PENGUIN", "unlock": "coins", "price": 450,
+	{"id": "penguin", "name": "SKIN_PENGUIN", "unlock": "coins", "price": 1400,
 		"colors": {"body": Color("37474f"), "belly": Color("fafafa"), "cap": Color("ff9800")}, "extras": ["beak"]},
 	{"id": "unicorn", "name": "SKIN_UNICORN", "unlock": "ad",
 		"colors": {"body": Color("f8bbd0"), "belly": Color("ffffff"), "cap": Color("ba68c8")}, "extras": ["horn"]},
-	{"id": "pirate", "name": "SKIN_PIRATE", "unlock": "coins", "price": 600,
+	{"id": "pirate", "name": "SKIN_PIRATE", "unlock": "coins", "price": 2000,
 		"colors": {"body": Color("c62828"), "belly": Color("ffe0b2"), "cap": Color("212121")}, "extras": ["pirate_hat"]},
 	{"id": "dj", "name": "SKIN_DJ", "unlock": "ad",
 		"colors": {"body": Color("26a69a"), "belly": Color("b2dfdb"), "cap": Color("212121")}, "extras": ["headphones", "cap"]},
-	{"id": "astronaut", "name": "SKIN_ASTRONAUT", "unlock": "coins", "price": 900,
+	{"id": "astronaut", "name": "SKIN_ASTRONAUT", "unlock": "coins", "price": 3000,
 		"colors": {"body": Color("eceff1"), "belly": Color("90caf9"), "cap": Color("1e88e5")}, "extras": ["visor", "antenna"]},
 	{"id": "shark", "name": "SKIN_SHARK", "unlock": "premium", "product": "skin_shark",
 		"colors": {"body": Color("78909c"), "belly": Color("eceff1"), "cap": Color("546e7a")}, "extras": ["fin"]},
@@ -42,9 +42,9 @@ const LIST := [
 
 ## Pacotes de moedas com dinheiro real (ids da Google Play).
 const COIN_PACKS := [
-	{"product": "coins_small", "coins": 500, "label": "PACK_SMALL"},
-	{"product": "coins_big", "coins": 1500, "label": "PACK_BIG"},
-	{"product": "coins_mega", "coins": 4000, "label": "PACK_MEGA"},
+	{"product": "coins_small", "coins": 1200, "label": "PACK_SMALL"},
+	{"product": "coins_big", "coins": 3500, "label": "PACK_BIG"},
+	{"product": "coins_mega", "coins": 9000, "label": "PACK_MEGA"},
 ]
 
 

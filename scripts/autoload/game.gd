@@ -156,6 +156,8 @@ func complete_level(level: int, time: float, par_time: float, falls: int, coins_
 		earned_stars = 2
 
 	var key := str(level)
+	# Repetir uma fase já vencida rende metade (não dá para "farmar" a fase 1).
+	var replay := stars.has(key)
 	var new_record := time < get_best_time(level)
 	if new_record:
 		best_times[key] = time
@@ -165,10 +167,12 @@ func complete_level(level: int, time: float, par_time: float, falls: int, coins_
 	unlocked_level = maxi(unlocked_level, level + 1)
 	levels_since_ad += 1
 
-	var finish_bonus := 10 + earned_stars * 5
-	var no_fall_bonus := 15 if falls == 0 else 0
-	var place_bonus: int = [25, 15, 8][place - 1] if place <= 3 else 0
+	var finish_bonus := 5 + earned_stars * 2
+	var no_fall_bonus := 5 if falls == 0 else 0
+	var place_bonus: int = [10, 5, 2][place - 1] if place <= 3 else 0
 	var total := coins_collected + finish_bonus + no_fall_bonus + place_bonus
+	if replay:
+		total = int(ceil(total * 0.5))
 	coins += total
 	coins_changed.emit(coins)
 	save_game()
@@ -182,6 +186,7 @@ func complete_level(level: int, time: float, par_time: float, falls: int, coins_
 		"no_fall_bonus": no_fall_bonus,
 		"place_bonus": place_bonus,
 		"coins_total": total,
+		"replay": replay,
 	}
 
 
@@ -263,7 +268,7 @@ func next_daily_streak() -> int:
 
 
 func daily_amount(streak: int) -> int:
-	return 20 + (streak - 1) * 10
+	return mini(20 + (streak - 1) * 10, 80)
 
 
 func claim_daily() -> int:
