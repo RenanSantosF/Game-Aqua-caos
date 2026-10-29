@@ -65,12 +65,18 @@ Quem coleta dados é o SDK do AdMob. O jogo em si não envia nada.
 - Dados criptografados em trânsito? **Sim**.
 - Usuário pode pedir exclusão? Não há conta. Os dados ficam no aparelho e
   somem ao desinstalar.
-- Tipos de dados, todos coletados pelo SDK de anúncios, com finalidade
-  "Publicidade ou marketing", "Prevenção de fraudes" e "Análise":
+- Tipos de dados, todos do SDK de anúncios:
   - **Local aproximado** (pelo endereço IP);
   - **Interações com o app** (interação com anúncios);
-  - **Diagnóstico** (falhas e desempenho do SDK);
+  - **Registros de falhas** e **Diagnóstico** (desempenho do SDK);
   - **IDs do dispositivo ou outros IDs** (ID do conjunto de apps).
+- Para cada tipo:
+  - **coletado e compartilhado** (vai para a rede de anúncios do Google);
+  - **não** processado temporariamente;
+  - **obrigatório**;
+  - finalidades da coleta: "Publicidade ou marketing", "Análise" e
+    "Prevenção de fraudes, segurança e conformidade";
+  - finalidade do compartilhamento: "Publicidade ou marketing".
 - Confira a lista oficial do Google para o AdMob, que pode mudar:
   https://developers.google.com/admob/android/privacy/play-data-disclosure
 
