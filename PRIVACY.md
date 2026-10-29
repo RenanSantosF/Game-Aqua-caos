@@ -4,7 +4,7 @@
 
 Última atualização · Last updated · Última actualización: 2026-10-28
 
-Contato · Contact · Contacto: **[E-MAIL DE CONTATO]**
+Contato · Contact · Contacto: **renan_ferreira.es@outlook.com**
 
 ---
 

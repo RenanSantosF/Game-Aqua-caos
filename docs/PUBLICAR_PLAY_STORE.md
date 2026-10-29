@@ -49,7 +49,7 @@ do Google Play**, que é o padrão. O Google guarda a chave final; a nossa
 
 | Pergunta | Resposta |
 |---|---|
-| Política de privacidade | `https://github.com/RenanSantosF/Game-Aqua-caos/blob/main/PRIVACY.md` (preencha o e-mail de contato antes) |
+| Política de privacidade | `https://github.com/RenanSantosF/Game-Aqua-caos/blob/main/PRIVACY.md` |
 | Anúncios | **Sim, contém anúncios** |
 | Acesso ao app | Todas as funcionalidades estão disponíveis sem restrições |
 | ID de publicidade | **Não** usa (o app não declara a permissão `AD_ID`) |
