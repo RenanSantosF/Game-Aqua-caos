@@ -25,9 +25,20 @@ var _user_pitch := 0.0
 var _idle := 99.0
 var _drag_index := -1
 var _shake := 0.0
+## Filtro azul na tela quando a câmera está debaixo da água (túnel submarino).
+var _underwater: ColorRect
 
 
 func _ready() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 0
+	add_child(layer)
+	_underwater = ColorRect.new()
+	_underwater.color = Color(0.05, 0.4, 0.85, 0.3)
+	_underwater.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_underwater.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_underwater.hide()
+	layer.add_child(_underwater)
 	if not target_path.is_empty():
 		target = get_node(target_path)
 		if target is Player:
@@ -99,6 +110,7 @@ func _physics_process(delta: float) -> void:
 		var weight := 1.0 - exp(-follow_speed * delta)
 		global_position = global_position.lerp(_desired_position(), weight)
 	look_at(_look_point())
+	_underwater.visible = global_position.y < CourseBuilder.WATER_Y + 0.1
 	if _shake > 0.0:
 		_shake = move_toward(_shake, 0.0, delta * 1.5)
 		h_offset = randf_range(-1.0, 1.0) * _shake * 0.3
@@ -114,9 +126,16 @@ func _desired_yaw() -> float:
 func _desired_position() -> Vector3:
 	var pitch := deg_to_rad(18.0 if celebrating else pitch_degrees) + _user_pitch
 	var dist := 5.5 if celebrating else distance
+	# Dentro do túnel submerso: câmera baixa e perto, dentro do tubo.
+	var in_tunnel := target is Player and (target as Player).tunnel_count > 0 \
+			and target.global_position.y < CourseBuilder.WATER_Y + 1.5
+	if in_tunnel:
+		pitch = deg_to_rad(12.0)
+		dist = 3.6
 	var offset := Vector3(0, 0, dist).rotated(Vector3.RIGHT, -pitch).rotated(Vector3.UP, _yaw)
 	var desired := target.global_position + Vector3.UP * look_height + offset
-	desired.y = maxf(desired.y, CourseBuilder.WATER_Y + 1.0)
+	if not in_tunnel:
+		desired.y = maxf(desired.y, CourseBuilder.WATER_Y + 1.0)
 	return desired
 
 

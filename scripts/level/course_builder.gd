@@ -12,12 +12,15 @@ extends RefCounted
 const WATER_Y := -1.2
 const FONT := preload("res://assets/fonts/LilitaOne-Regular.ttf")
 const FLOW_SHADER := preload("res://shaders/water_flow.gdshader")
+## Altura do piso do túnel submerso.
+const TUNNEL_FLOOR := -4.6
 
 ## Fase mínima para cada tipo de trecho aparecer.
 const UNLOCK := {
 	"hops": 1, "sweeper": 1, "slide": 1, "stairs": 1, "waterslide": 1,
-	"hammers": 2, "moving": 2, "bounce": 2, "serpentine": 2,
-	"vanishing": 3, "logs": 3,
+	"spiral": 1, "climb": 1, "floats": 1,
+	"hammers": 2, "moving": 2, "bounce": 2, "serpentine": 2, "bumpers": 2, "tunnel": 2,
+	"vanishing": 3, "logs": 3, "coaster": 3, "windmill": 3,
 	"pushers": 4, "fans": 4,
 	"balls": 5, "elevators": 5,
 	"discs": 6, "ramp": 6,
@@ -47,10 +50,13 @@ var hammers: Array[PendulumHammer] = []
 var sweepers: Array[Sweeper] = []
 var rollers: Array[BallRoller] = []
 var pushers: Array[Pusher] = []
+## Outros perigos com is_dangerous() (moinhos): os rivais esperam.
+var hazards: Array[Node3D] = []
 
 var _color_index := 0
 var _yaw := 0.0
 var _flow_material: ShaderMaterial
+var _glass_material: StandardMaterial3D
 
 
 func build(parent: Node3D, level_number: int, theme: Dictionary) -> Dictionary:
@@ -86,11 +92,11 @@ func build(parent: Node3D, level_number: int, theme: Dictionary) -> Dictionary:
 func _plan() -> Array[String]:
 	match level:
 		1:
-			return ["hops", "stairs", "sweeper", "curve", "waterslide", "hops"]
+			return ["hops", "climb", "curve", "sweeper", "spiral", "hill", "floats", "hops"]
 		2:
-			return ["hops", "waterslide", "hammers", "curve", "moving", "stairs", "bounce"]
+			return ["bumpers", "hill", "waterslide", "curve", "hammers", "tunnel", "stairs", "moving"]
 		3:
-			return ["vanishing", "curve", "logs", "stairs", "sweeper", "serpentine", "hops", "hammers"]
+			return ["floats", "coaster", "curve", "vanishing", "windmill", "hill", "logs", "spiral"]
 	var pool: Array[String] = []
 	for kind in UNLOCK:
 		if level >= UNLOCK[kind]:
@@ -101,19 +107,29 @@ func _plan() -> Array[String]:
 	for kind in UNLOCK:
 		if UNLOCK[kind] == level:
 			plan.append(kind)
+	# Sorteio sem repetir enquanto houver tipos novos (cada fase bem diferente).
+	var bag: Array[String] = []
 	while plan.size() < count:
-		var kind: String = pool[rng.randi() % pool.size()]
-		if plan.is_empty() or plan[plan.size() - 1] != kind:
+		if bag.is_empty():
+			bag = pool.duplicate()
+			for i in range(bag.size() - 1, 0, -1):
+				var j := rng.randi_range(0, i)
+				var tmp := bag[i]
+				bag[i] = bag[j]
+				bag[j] = tmp
+		var kind: String = bag.pop_back()
+		if not plan.has(kind) or pool.size() <= plan.size():
 			plan.append(kind)
-	if plan.size() > 1 and rng.randf() < 0.5:
-		var first: String = plan.pop_front()
-		plan.insert(rng.randi_range(0, plan.size()), first)
-	# Curvas entre os trechos deixam o percurso sinuoso.
+	# Entre os trechos: curvas e morros (o percurso sobe e desce bastante).
 	var result: Array[String] = []
 	for i in plan.size():
 		result.append(plan[i])
-		if i < plan.size() - 1 and rng.randf() < 0.55:
-			result.append("curve")
+		if i < plan.size() - 1:
+			var r := rng.randf()
+			if r < 0.4:
+				result.append("curve")
+			elif r < 0.75:
+				result.append("hill")
 	return result
 
 
@@ -358,7 +374,7 @@ func _slope(length: float, drop: float, width: float, slippery: bool, color: Col
 
 ## Arco (curva) a partir da borda atual. Gira o referencial no final.
 ## turn: +1 esquerda, -1 direita. drop: quanto desce ao longo do arco.
-func _arc(radius: float, angle: float, turn: float, width: float, drop: float, slippery: bool, rail_height: float, color: Color, tube := false) -> void:
+func _arc(radius: float, angle: float, turn: float, width: float, drop: float, slippery: bool, rail_height: float, color: Color, tube := false, pillar_skip := 0.0) -> void:
 	var steps := maxi(4, int(angle / deg_to_rad(11.0)))
 	var start_y := y
 	var origin := Vector3(0, 0, z)
@@ -370,14 +386,14 @@ func _arc(radius: float, angle: float, turn: float, width: float, drop: float, s
 		_waypoint((previous + point) * 0.5)
 		if tube and i % 2 == 1:
 			_tube_ring(previous, point, width, color.lightened(0.35))
-		if i % 2 == 0:
+		if i % 2 == 0 and phi > pillar_skip:
 			_pillars(Vector3(point.x, point.y - 0.6, point.z), width * 0.5)
 		if i % 2 == 1:
 			_coin(point + Vector3(0, 1.0, 0))
 		previous = point
 	var end := origin + Vector3(turn * (-radius + radius * cos(angle)), 0, -radius * sin(angle))
 	y = start_y - drop
-	_yaw += turn * angle
+	_yaw = wrapf(_yaw + turn * angle, -PI, PI)
 	_open_frame(root.transform * Transform3D(Basis(Vector3.UP, turn * angle), end))
 	par_time += radius * angle / 6.5
 
@@ -454,8 +470,7 @@ func _seg_serpentine() -> void:
 		var angle := deg_to_rad(rng.randf_range(45.0, 65.0))
 		_arc(rng.randf_range(7.0, 9.0), angle, turn, 4.4, total_drop / bends, true, 1.1, color)
 		turn = -turn
-	_platform(Vector3(0, y, z - 2.0), Vector3(5, 1, 4), Color("4fc3f7"), true)
-	z -= 4.0
+	_splash_pool()
 	par_time += 14.0 / 7.0 + bends * 2.0
 	_landing(6.0, 0.0)
 
@@ -607,7 +622,7 @@ func _seg_slide() -> void:
 		_sign(Vector3(0, y + 2.6, z - 1.0), "SIGN_SLIDE")
 	z -= length
 	y -= drop
-	_platform(Vector3(0, y, z - 1.5), Vector3(5, 1, 3), Color("4fc3f7"), true)
+	_platform(Vector3(0, y, z - 1.5), Vector3(5, 1, 3), Color("4fc3f7"))
 	var pad := BouncePad.new()
 	pad.position = Vector3(0, y, z - 2.0)
 	root.add_child(pad)
@@ -685,7 +700,7 @@ func _seg_stairs() -> void:
 func _seg_waterslide() -> void:
 	# Toboágua: torre alta com escada e um tubo colorido cheio de curvas e
 	# água correndo, que termina numa piscina de respingos.
-	var height := 4.6 + difficulty * 2.4
+	var height := 5.6 + difficulty * 2.4
 	var width := 3.6
 	_platform(Vector3(0, y, z - 1.5), Vector3(width + 2.0, 1, 3))
 	z -= 3.0
@@ -704,7 +719,7 @@ func _seg_waterslide() -> void:
 		_sign(Vector3(0, y + 3.6, top_z), "SIGN_WATERSLIDE")
 	z -= 4.0
 	# Tubo: curvas alternadas que descem toda a altura da torre.
-	var bends := 3 + (1 if difficulty > 0.5 else 0)
+	var bends := 4 + (1 if difficulty > 0.4 else 0)
 	var total_drop := clampf(height + 0.3, 0.0, y + 0.2)
 	var color := _next_color()
 	var turn := _turn_sign(deg_to_rad(60.0))
@@ -713,13 +728,369 @@ func _seg_waterslide() -> void:
 		_arc(rng.randf_range(6.5, 8.5), angle, turn, width, total_drop / bends, true, 1.5, color, true)
 		turn = -turn
 	# Piscina de respingos na saída.
-	_platform(Vector3(0, y, z - 2.5), Vector3(6, 1, 5), Color("4fc3f7"), true)
+	_splash_pool()
+	par_time += height / 2.2 + 4.0 / 6.0 + bends * 1.8
+	_landing(6.0, 0.0)
+
+
+## Rampa de subida com jatos de água que empurram para cima (sem escorregar).
+func _booster_slope(length: float, rise: float, width: float, color: Color, speed := 6.0) -> void:
+	var from := Vector3(0, y, z)
+	var to := Vector3(0, y + rise, z - length)
+	var body := _ramp_piece(from, to, width, color, false, 1.0)
+	body.set_script(BoosterBelt)
+	body.set("push", (_global(to) - _global(from)).normalized() * speed)
+	_flowing_water(body, Vector3(width * 0.85, 0.04, (to - from).length()), Vector3(0, 0.32, 0))
+	for k in 3:
+		var t := (k + 0.5) / 3.0
+		_pillars(Vector3(0, y + rise * t - 0.6, z - length * t), width)
+	_waypoint((from + to) * 0.5)
+	_splash_fx(from + Vector3(0, 0.3, -0.6), 10, 0.7)
+	z -= length
+	y += rise
+	par_time += length / 9.0
+
+
+## Topo de torre com cobertura listrada (toboáguas).
+func _tower_top(width: float, sign_key: String) -> void:
+	var top_z := z - 2.0
+	_platform(Vector3(0, y, top_z), Vector3(width + 2.0, y + 2.4, 4), Color(0, 0, 0, 0), false, false)
+	var roof_color := _next_color()
+	for cx in [-1.0, 1.0]:
+		for cz in [-1.0, 1.0]:
+			Build.cylinder(root, 0.12, 2.9, Color("eceff1"), Vector3(cx * (width * 0.5 + 0.7), y + 1.45, top_z + cz * 1.6))
+	for i in 5:
+		var stripe := roof_color if i % 2 == 0 else Color.WHITE
+		Build.box(root, Vector3(width + 2.2, 0.18, 0.84), stripe, Vector3(0, y + 3.0, top_z - 1.68 + i * 0.84), i == 2)
+	if level <= 6:
+		_sign(Vector3(0, y + 3.6, top_z), sign_key)
+	z -= 4.0
+
+
+## Piscina de respingos na saída de um toboágua.
+func _splash_pool() -> void:
+	# Piscina que freia (não escorrega) e com mureta: quem chega rápido não voa longe.
+	_platform(Vector3(0, y, z - 2.5), Vector3(8, 1, 5), Color("4fc3f7"))
+	for side in [-1.0, 1.0]:
+		Build.solid_box(root, Vector3(0.3, 0.6, 5), Vector3(side * 3.85, y + 0.6, z - 2.5), Color.WHITE)
 	_splash_fx(Vector3(0, y + 0.2, z - 0.8), 22, 1.0)
 	for side in [-1.0, 1.0]:
 		Build.torus(root, 0.35, 0.6, Color("ef5350") if side < 0 else Color("ffca28"), Vector3(side * 2.2, y + 0.15, z - 3.2))
 	z -= 5.0
-	par_time += height / 2.2 + 4.0 / 6.0 + bends * 1.8
+
+
+## Peça de túnel de vidro (vai para baixo da água). booster > 0: jatos que sobem.
+func _tunnel_piece(from: Vector3, to: Vector3, width: float, slippery: bool, booster := 0.0) -> void:
+	var body := _ramp_piece(from, to, width, Color("4dd0e1"), slippery, 0.9)
+	var direction := to - from
+	# Paredes altas invisíveis (o vidro segura o jogador dentro do túnel).
+	for side in [-1.0, 1.0]:
+		var wall := CollisionShape3D.new()
+		var wall_box := BoxShape3D.new()
+		wall_box.size = Vector3(0.3, 3.0, direction.length() + 0.35)
+		wall.shape = wall_box
+		wall.position = Vector3(side * (width * 0.5 + 0.15), 1.6, 0)
+		body.add_child(wall)
+	if booster > 0.0:
+		body.set_script(BoosterBelt)
+		body.set("push", (_global(to) - _global(from)).normalized() * booster)
+		_flowing_water(body, Vector3(width * 0.85, 0.04, direction.length()), Vector3(0, 0.32, 0))
+	if _glass_material == null:
+		_glass_material = StandardMaterial3D.new()
+		_glass_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_glass_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_glass_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		_glass_material.albedo_color = Color(0.25, 0.7, 1.0, 0.4)
+	var basis := Basis.looking_at(direction.normalized(), Vector3.UP)
+	var radius := width * 0.5 + 0.9
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = radius
+	mesh.bottom_radius = radius
+	mesh.height = direction.length() + 0.3
+	mesh.radial_segments = 18
+	mesh.rings = 1
+	mesh.cap_top = false
+	mesh.cap_bottom = false
+	var glass := MeshInstance3D.new()
+	glass.mesh = mesh
+	glass.material_override = _glass_material
+	glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	glass.transform = Transform3D(basis * Basis(Vector3.RIGHT, PI * 0.5), (from + to) * 0.5 + Vector3.UP * (radius - 0.9))
+	root.add_child(glass)
+	var ring := Build.torus(root, radius - 0.1, radius + 0.15, Color("fdd835"), from + Vector3.UP * (radius - 0.9))
+	ring.basis = basis * Basis(Vector3.RIGHT, PI * 0.5)
+	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var zone := TunnelZone.new()
+	zone.transform = Transform3D(basis, (from + to) * 0.5 + Vector3.UP * 1.4)
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(width + 1.0, 4.0, direction.length() + 0.6)
+	shape.shape = box
+	zone.add_child(shape)
+	root.add_child(zone)
+	_waypoint((from + to) * 0.5)
+
+
+## Fundo do mar perto do túnel: areia, corais, algas e peixes.
+func _seabed(center: Vector3, length: float) -> void:
+	var floor_y := TUNNEL_FLOOR - 2.6
+	Build.box(root, Vector3(16, 0.4, length + 10), Color("ffe0b2"), Vector3(center.x, floor_y, center.z))
+	for i in 14:
+		var side := -1.0 if i % 2 == 0 else 1.0
+		var p := Vector3(center.x + side * rng.randf_range(3.6, 7.0), floor_y, center.z + rng.randf_range(-length * 0.5, length * 0.5))
+		match i % 3:
+			0:
+				Build.capsule(root, 0.18, rng.randf_range(1.6, 3.2), Color("43a047"), p + Vector3.UP * 1.2)
+			1:
+				Build.sphere(root, rng.randf_range(0.4, 0.8), [Color("ff7043"), Color("ec407a"), Color("ab47bc")][i % 3], p + Vector3.UP * 0.4, true)
+			2:
+				var fish := Build.box(root, Vector3(0.25, 0.35, 0.7), [Color("ffca28"), Color("ff7043"), Color("29b6f6")][rng.randi() % 3], p + Vector3.UP * rng.randf_range(1.5, 3.5), true)
+				fish.rotation.y = rng.randf() * TAU
+	if not Game.low_graphics():
+		var bubbles := CPUParticles3D.new()
+		var drop := SphereMesh.new()
+		drop.radius = 0.08
+		drop.height = 0.16
+		drop.radial_segments = 6
+		drop.rings = 3
+		drop.material = Mat.unshaded(Color(0.85, 0.97, 1.0, 0.8))
+		bubbles.mesh = drop
+		bubbles.amount = 30
+		bubbles.lifetime = 3.0
+		bubbles.direction = Vector3.UP
+		bubbles.spread = 10.0
+		bubbles.gravity = Vector3(0, 1.5, 0)
+		bubbles.initial_velocity_min = 0.3
+		bubbles.initial_velocity_max = 0.8
+		bubbles.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+		bubbles.emission_box_extents = Vector3(6, 0.2, length * 0.5)
+		bubbles.position = Vector3(center.x, floor_y + 0.5, center.z)
+		root.add_child(bubbles)
+
+
+func _seg_hill() -> void:
+	# Morro: o percurso sobe (rampa ou escada) ou desce escorregando.
+	var color := _next_color()
+	if y < 3.5 and (y < 0.8 or rng.randf() < 0.55):
+		var rise := rng.randf_range(1.6, 3.0)
+		if rng.randf() < 0.5:
+			_stairs(rise, 5.0)
+		else:
+			var length := rise / 0.34
+			_slope(length, -rise, 5.0, false, color)
+			_coin_line(Vector3(0, y + 1.0, z - 1.0), Vector3(0, y + rise + 1.0, z - length + 1.0), 3)
+			z -= length
+			y += rise
+			par_time += length / 5.5
+	else:
+		var drop := clampf(rng.randf_range(2.0, 3.8), 0.0, y + 0.2)
+		var length := drop * 3.0 + 3.0
+		_slope(length, drop, 5.0, true, color)
+		_coin_line(Vector3(0, y + 0.8, z - 1.5), Vector3(0, y - drop + 0.9, z - length + 1.0), 3)
+		z -= length
+		y -= drop
+		par_time += length / 9.0
+	_landing(4.0, 0.0)
+
+
+func _seg_climb() -> void:
+	# Só subida: rampa, curva subindo, escada e jatos até lá no alto.
+	var width := 4.6
+	var color := _next_color()
+	_platform(Vector3(0, y, z - 1.5), Vector3(width + 1.0, 1, 3))
+	z -= 3.0
+	if level <= 4:
+		_sign(Vector3(0, y + 2.4, z + 0.5), "SIGN_CLIMB")
+	var scale := 1.0 if y < 2.0 else 0.6
+	var rise1 := 1.8 * scale
+	_slope(rise1 / 0.33, -rise1, width, false, color)
+	_coin_line(Vector3(0, y + 1.0, z - 1.0), Vector3(0, y + rise1 + 1.0, z - rise1 / 0.33 + 1.0), 3)
+	z -= rise1 / 0.33
+	y += rise1
+	_arc(7.0, deg_to_rad(70.0), _turn_sign(deg_to_rad(70.0)), width, -1.4 * scale, false, 0.8, color.lightened(0.1))
+	_stairs(2.2 * scale, width)
+	_booster_slope(7.0, 1.8 * scale, width, color.lightened(0.2))
+	# Mirante no topo, com bandeirinhas.
+	_platform(Vector3(0, y, z - 2.0), Vector3(width + 1.0, y + 2.0, 4), Color(0, 0, 0, 0), false, false)
+	for side in [-1.0, 1.0]:
+		Build.cylinder(root, 0.08, 2.4, Color("eceff1"), Vector3(side * (width * 0.5 + 0.2), y + 1.2, z - 2.0))
+		Build.box(root, Vector3(0.05, 0.5, 0.8), _next_color(), Vector3(side * (width * 0.5 + 0.2), y + 2.1, z - 2.4))
+	z -= 4.0
+	par_time += 3.0
+	_landing(4.0, 0.0)
+
+
+func _seg_spiral() -> void:
+	# Toboágua em espiral: torre bem alta, uma volta inteira descendo e saída.
+	var base_y := y
+	var height := 7.2 + difficulty * 2.0
+	var width := 3.6
+	_platform(Vector3(0, y, z - 1.5), Vector3(width + 2.0, 1, 3))
+	z -= 3.0
+	_stairs(height, width)
+	_tower_top(width, "SIGN_SPIRAL")
+	var color := _next_color()
+	# Reta de entrada sem pilares: o fim da espiral passa embaixo dela.
+	var from := Vector3(0, y, z)
+	var to := Vector3(0, y - 0.6, z - 6.0)
+	_ramp_piece(from, to, width, color, true, 1.3)
+	_waypoint((from + to) * 0.5)
+	z -= 6.0
+	y -= 0.6
+	var turn := 1.0 if rng.randf() < 0.5 else -1.0
+	_arc(5.2, TAU, turn, width, 5.0, true, 1.3, color, false, deg_to_rad(85.0))
+	var drop := clampf(y - maxf(base_y - 0.5, 0.0), 0.0, y + 0.2)
+	if drop > 0.2:
+		var length := drop * 2.8 + 3.0
+		_slope(length, drop, width, true, color.lightened(0.2))
+		z -= length
+		y -= drop
+	_splash_pool()
+	par_time += height / 2.2 + 8.0
 	_landing(6.0, 0.0)
+
+
+func _seg_coaster() -> void:
+	# Montanha-russa aquática: desce, sobe empurrado pelos jatos e desce de novo.
+	var width := 4.2
+	var color := _next_color()
+	_platform(Vector3(0, y, z - 1.5), Vector3(width + 1.0, 1, 3))
+	z -= 3.0
+	if level <= 6:
+		_sign(Vector3(0, y + 2.4, z + 0.5), "SIGN_COASTER")
+	var low := maxf(y - 2.5, -0.2)
+	var first_drop := y - low
+	if first_drop > 0.3:
+		var length := first_drop * 3.0 + 3.0
+		_slope(length, first_drop, width, true, color)
+		z -= length
+		y = low
+	var rise := rng.randf_range(3.4, 4.4) + difficulty
+	_booster_slope(rise * 2.6, rise, width, color.lightened(0.15))
+	var turn := _turn_sign(deg_to_rad(70.0))
+	_arc(7.5, deg_to_rad(70.0), turn, width, rise * 0.65, true, 1.4, color, true)
+	var rise2 := rise * 0.45
+	_booster_slope(rise2 * 2.6, rise2, width, color.lightened(0.15))
+	var final_drop := clampf(y - maxf(low, 0.0), 0.0, y + 0.2)
+	_arc(7.5, deg_to_rad(60.0), -turn, width, final_drop, true, 1.4, color, true)
+	_splash_pool()
+	par_time += 10.0
+	_landing(5.0, 0.0)
+
+
+func _seg_tunnel() -> void:
+	# Túnel de vidro que mergulha embaixo da água e volta subindo com jatos.
+	var width := 4.0
+	var start_y := y
+	_platform(Vector3(0, y, z - 1.5), Vector3(width + 2.0, 1, 3))
+	z -= 3.0
+	if level <= 6:
+		_sign(Vector3(0, y + 2.6, z + 0.5), "SIGN_TUNNEL")
+	var drop := y - TUNNEL_FLOOR
+	var down := drop * 2.4
+	_tunnel_piece(Vector3(0, y, z), Vector3(0, TUNNEL_FLOOR, z - down), width, true)
+	z -= down
+	y = TUNNEL_FLOOR
+	var run := 12.0 + difficulty * 6.0
+	_tunnel_piece(Vector3(0, y, z), Vector3(0, y, z - run), width, false)
+	_coin_line(Vector3(0, y + 1.0, z - 1.5), Vector3(0, y + 1.0, z - run + 1.5), 5)
+	_seabed(Vector3(0, y, z - run * 0.5), run + down)
+	z -= run
+	var rise := maxf(start_y, 0.0) + 0.2 - y
+	var up := rise * 2.6
+	_tunnel_piece(Vector3(0, y, z), Vector3(0, y + rise, z - up), width, false, 7.0)
+	z -= up
+	y += rise
+	par_time += (down + run + up) / 7.0
+	_landing(5.0, 0.0)
+
+
+func _seg_floats() -> void:
+	# Boias redondas que sobem e descem na água.
+	if y > 0.6:
+		var drop := y
+		var length := drop * 3.0 + 2.0
+		_slope(length, drop, 4.5, true, _next_color())
+		z -= length
+		y = 0.0
+	_platform(Vector3(0, y, z - 1.5), Vector3(4, 1, 3))
+	z -= 3.0
+	if level <= 4:
+		_sign(Vector3(0, y + 2.4, z + 0.5), "SIGN_FLOATS")
+	var count := 4 + int(difficulty * 3.0)
+	for i in count:
+		var radius := lerpf(1.5, 1.3, difficulty)
+		# Saindo da borda, um pulo correndo alcança 4,3 a 5,1 m: com diâmetro + vão
+		# acima de 5,1 m ele cai sempre na boia seguinte (nunca passa dela).
+		var gap := 5.2 - radius * 2.0 + rng.randf() * 0.3
+		var cx := clampf(x + rng.randf_range(-0.8, 0.8), -2.0, 2.0)
+		var center_z := z - gap - radius
+		var float_body := BobbingFloat.new()
+		float_body.radius = radius
+		float_body.amplitude = lerpf(0.2, 0.45, difficulty)
+		float_body.period = rng.randf_range(2.0, 3.0)
+		float_body.color = _next_color()
+		float_body.position = Vector3(cx, -0.25, center_z)
+		root.add_child(float_body)
+		_waypoint(Vector3(cx, -0.25, center_z))
+		_coin(Vector3(cx, 1.2, center_z))
+		z = center_z - radius
+		x = cx
+		par_time += (gap + radius * 2.0) / 6.0 + 0.3
+	y = 0.0
+	_landing(5.0, 1.0)
+
+
+func _seg_bumpers() -> void:
+	# Fliperama: pinos que arremessam quem encosta, numa plataforma com muretas.
+	var width := 9.0
+	var length := 14.0 + difficulty * 6.0
+	_platform(Vector3(0, y, z - length * 0.5), Vector3(width, 1, length))
+	for side in [-1.0, 1.0]:
+		Build.solid_box(root, Vector3(0.4, 0.9, length), Vector3(side * (width * 0.5 - 0.2), y + 0.9, z - length * 0.5), Color.WHITE)
+	if level <= 4:
+		_sign(Vector3(0, y + 2.8, z - 0.5), "SIGN_BUMPERS")
+	# Zigue-zague: fileiras com pinos nas laterais e fileiras com um pino no
+	# meio, sempre deixando passagem.
+	var rows := int((length - 4.0) / 3.4)
+	for r in rows:
+		var row_z := z - 3.0 - r * 3.4
+		var spots := [-2.6, 2.6] if r % 2 == 0 else [0.0]
+		for sx in spots:
+			var bumper := Bumper.new()
+			bumper.color = _next_color()
+			bumper.position = Vector3(sx, y, row_z)
+			if r % 2 == 1 and rng.randf() < difficulty * 0.8:
+				bumper.sway = 1.0
+			root.add_child(bumper)
+		# Caminho dos rivais: pelo meio nas fileiras laterais, pelo lado na do meio.
+		var lane := 0.0 if r % 2 == 0 else (2.4 if r % 4 == 1 else -2.4)
+		_waypoint(Vector3(lane, y, row_z))
+		_coin(Vector3(lane, y + 1.0, row_z))
+	_waypoint(Vector3(0, y, z - length + 1.0))
+	z -= length
+	par_time += length / 4.5
+
+
+func _seg_windmill() -> void:
+	# Moinhos gigantes: pás girando atravessam a passarela.
+	var count := 1 + int(difficulty * 2.5)
+	var spacing := 6.5
+	var length := count * spacing + 3.0
+	_platform(Vector3(0, y, z - length * 0.5), Vector3(4.2, 1, length))
+	if level <= 5:
+		_sign(Vector3(0, y + 5.2, z - 0.5), "SIGN_WINDMILL")
+	for i in count:
+		var mill := Windmill.new()
+		mill.speed = (0.16 + 0.1 * difficulty) * (1.0 if rng.randf() < 0.5 else -1.0)
+		mill.color = _next_color()
+		mill.position = Vector3(0, y, z - 3.5 - i * spacing)
+		root.add_child(mill)
+		hazards.append(mill)
+		_coin(Vector3(0, y + 1.0, z - 3.5 - i * spacing - spacing * 0.5))
+	_waypoint(Vector3(0, y, z - length * 0.5))
+	z -= length
+	par_time += length / 6.0 + count * 1.0
 
 
 func _seg_ramp() -> void:

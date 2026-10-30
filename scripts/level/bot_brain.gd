@@ -113,6 +113,14 @@ func think(player: Player, delta: float) -> void:
 			move = -forward * 0.1
 			return
 
+	# Espera as pás do moinho saírem de baixo antes de passar.
+	for hazard in _builder.hazards:
+		var rel := hazard.global_position - pos
+		var ahead := rel.dot(forward)
+		if ahead > 0.2 and ahead < 2.4 and absf(rel.dot(right)) < 2.5 and hazard.is_dangerous():
+			move = -forward * 0.1
+			return
+
 	if not player.is_on_floor():
 		return
 

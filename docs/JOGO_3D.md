@@ -39,13 +39,13 @@ número inteiro do Godot, mais de 2 bilhões de fases. Os rivais conseguem
 terminar as fases nos testes automáticos, o que mostra que os percursos
 são possíveis de completar.
 
-### Tipos de trecho (22)
+### Tipos de trecho (29)
 
 | Fase em que aparece | Trechos |
 |---|---|
-| 1 | pulos entre plataformas, bastão giratório, escorregador, curvas, **escadaria** (sobe alto e desce escorregando), **toboágua** (torre, tubo com água correndo e curvas) |
-| 2 | martelos em pêndulo, plataformas móveis, boias trampolim, tobogã em zigue-zague |
-| 3 | piso que cai, troncos rolantes |
+| 1 | pulos entre plataformas, bastão giratório, escorregador, curvas, **escadaria**, **toboágua** (torre e tubo com água correndo), **espiral gigante** (uma volta inteira descendo), **só subida** (rampa, curva, escada e jatos), **boias que balançam** |
+| 2 | martelos em pêndulo, plataformas móveis, boias trampolim, tobogã em zigue-zague, **fliperama** (pinos que arremessam), **túnel submarino** (tubo de vidro embaixo da água) |
+| 3 | piso que cai, troncos rolantes, **montanha-russa aquática** (desce, sobe com jatos e desce de novo), **moinhos** (pás girando sobre a passarela) |
 | 4 | paredes que dão soco, ventiladores de vento |
 | 5 | bolas gigantes, elevadores |
 | 6 | discos giratórios, rampa de salto |
@@ -53,7 +53,10 @@ são possíveis de completar.
 | 8 | gêiseres |
 | 9 | tambor giratório |
 
-A fase que libera um trecho novo sempre o traz. Há placas avisando cada
+A fase que libera um trecho novo sempre o traz. Os trechos não se
+repetem dentro da mesma fase, e entre eles há curvas e **morros** (subidas
+por rampa ou escada e descidas escorregando), então o percurso sobe e desce
+o tempo todo. Há placas avisando cada
 trecho e checkpoints a cada 3 trechos.
 
 ## Telas

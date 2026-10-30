@@ -258,53 +258,104 @@ def drums(track, bars, beats_per_bar=4, gain=1.0, claps=True):
 
 # --- Músicas ----------------------------------------------------------------------
 
+def drums_pop(track, bars, gain=1.0, fill_every=8):
+    """Batida pop animada: bumbo em todo tempo, palmas no 2 e 4, chocalho em semicolcheias."""
+    for bar in range(bars):
+        b0 = bar * 4
+        for beat in range(4):
+            track.add(b0 + beat, kick(), 0.42 * gain)
+        track.add(b0 + 1, clap(), 0.55 * gain)
+        track.add(b0 + 3, clap(), 0.55 * gain)
+        for i in range(16):
+            track.add(b0 + i * 0.25, shaker(1.0 if i % 2 else 0.5), 0.8 * gain)
+        if fill_every and bar % fill_every == fill_every - 1:
+            for i in range(4):
+                track.add(b0 + 3 + i * 0.25, clap(0.7), 0.35 * gain)
+
+
+def stabs(track, chords, gain=1.0):
+    """Metais curtos no contratempo (dá o "balanço")."""
+    for bar, name in enumerate(chords):
+        b0 = bar * 4
+        for beat in (0.5, 1.5, 2.5, 3.5):
+            for n in CHORDS[name]:
+                track.add(b0 + beat, brass(midi(n), 0.18 * track.spb), 0.08 * gain)
+
+
 def song_race():
-    t = Track(128, 64)
-    chords = ["G", "Em", "C", "D", "G", "Em", "C", "D", "C", "D", "Bm", "Em", "C", "D", "G", "D7"]
-    groove(t, chords)
-    drums(t, 16)
-    a = [(67, .5), (71, .5), (74, .5), (71, .5), (76, 1), (74, 1),
-         (71, .5), (74, .5), (76, .5), (74, .5), (71, 1), (67, 1),
-         (72, .5), (76, .5), (79, .5), (76, .5), (74, 1), (72, .5), (71, .5),
-         (69, .5), (71, .5), (72, .5), (74, .5), (69, 2)]
-    a2 = a[:18] + [(74, .5), (72, .5), (71, .5), (69, .5), (67, 2)]
-    b = [(79, 1), (76, .5), (79, .5), (81, 1), (79, 1),
-         (78, 1), (74, .5), (78, .5), (81, 1), (78, 1),
-         (79, .5), (78, .5), (74, .5), (71, .5), (74, 1), (78, 1),
-         (76, 2), (79, 1), (76, 1),
-         (76, .5), (79, .5), (76, .5), (72, .5), (74, 1), (76, 1),
-         (78, .5), (76, .5), (74, .5), (72, .5), (71, 1), (69, 1),
-         (67, .5), (71, .5), (74, .5), (79, .5), (78, .5), (79, .5), (74, 1),
-         (72, .5), (71, .5), (69, .5), (66, .5), (67, 2)]
-    beat = add_melody(t, a, marimba, 0, 0.55)
-    beat = add_melody(t, a2, marimba, beat, 0.55)
-    add_melody(t, b, marimba, beat, 0.55)
-    add_melody(t, b, glock, beat, 0.12, octave=1)
-    return t.render(0.18)
+    # Fá maior, 146 BPM. Refrão-chiclete de 2 compassos que se repete com
+    # pequenas variações (A), uma parte B que "sobe" e volta ao refrão.
+    t = Track(146, 128)
+    verse = ["F", "C", "Dm", "Bb"] * 2
+    lift = ["Bb", "C", "Am", "Dm", "Bb", "C", "F", "C7"]
+    chords = verse + verse + lift + verse
+    groove(t, chords, gain=0.9)
+    drums_pop(t, len(chords))
+    stabs(t, verse + verse, 0.8)
+    hook = [(72, .5), (72, .5), (74, .5), (72, .5), (69, .75), (65, .25), (67, .5), (69, .5),
+            (70, .5), (70, .5), (72, .5), (70, .5), (69, 1.5), (None, .5)]
+    hook_up = hook[:8] + [(70, .5), (72, .5), (74, .5), (77, .5), (76, 1.5), (None, .5)]
+    hook_end = hook[:8] + [(70, .5), (69, .5), (67, .5), (64, .5), (65, 1.5), (None, .5)]
+    a = hook + hook_up + hook + hook_end
+    b = [(77, 1), (76, .5), (74, .5), (72, 1), (74, 1),
+         (76, .5), (77, .5), (79, .5), (77, .5), (76, 2),
+         (72, 1), (74, .5), (76, .5), (77, 1), (76, .5), (74, .5),
+         (74, .5), (72, .5), (70, .5), (69, .5), (69, 2),
+         (70, .5), (72, .5), (74, .5), (77, .5), (79, 1), (77, 1),
+         (76, .5), (77, .5), (79, .5), (81, .5), (79, 2),
+         (81, .5), (79, .5), (77, .5), (76, .5), (77, 1), (72, 1),
+         (74, .5), (76, .5), (79, .5), (76, .5), (72, 2)]
+    beat = add_melody(t, a, marimba, 0, 0.6)
+    beat = add_melody(t, a, marimba, beat, 0.6)
+    add_melody(t, a, glock, beat - 32, 0.13, octave=1)  # segunda volta: brilho
+    beat = add_melody(t, b, flute, beat, 0.5)
+    add_melody(t, b, marimba, beat - 32, 0.25)
+    beat = add_melody(t, a, marimba, beat, 0.6)
+    add_melody(t, a, glock, beat - 32, 0.15, octave=1)
+    return t.render(0.16)
 
 
 def song_race2():
-    t = Track(120, 64)
-    chords = ["C", "Am", "F", "G", "C", "Am", "F", "G", "F", "G", "Em", "Am", "F", "G", "C", "G"]
-    groove(t, chords)
-    drums(t, 16, claps=True)
-    a = [(72, .75), (74, .25), (76, .5), (79, .5), (76, 1), (72, 1),
-         (69, .5), (72, .5), (76, .5), (72, .5), (69, 2),
-         (65, .5), (69, .5), (72, .5), (77, .5), (76, 1), (74, 1),
-         (71, .5), (74, .5), (79, .5), (77, .5), (74, 2)]
-    a2 = a[:17] + [(74, .5), (76, .5), (74, .5), (71, .5), (72, 2)]
-    b = [(77, 1), (76, .5), (77, .5), (81, 2),
-         (79, 1), (77, .5), (79, .5), (83, 2),
-         (79, .5), (76, .5), (72, .5), (76, .5), (79, 2),
-         (81, .5), (79, .5), (76, .5), (72, .5), (69, 2),
-         (77, .5), (76, .5), (74, .5), (72, .5), (69, 1), (72, 1),
-         (74, .5), (76, .5), (77, .5), (79, .5), (74, 2),
-         (76, .5), (79, .5), (84, .5), (79, .5), (76, 1), (72, 1),
-         (74, 1), (71, 1), (67, 2)]
-    beat = add_melody(t, a, flute, 0, 0.42)
-    beat = add_melody(t, a2, flute, beat, 0.42)
-    add_melody(t, b, marimba, beat, 0.55)
-    return t.render(0.2)
+    # Sol maior, 142 BPM, balanço de ska: baixo saltitante, refrão de flauta
+    # com pergunta e resposta da marimba.
+    t = Track(142, 128)
+    verse = ["G", "Em", "C", "D"] * 2
+    lift = ["C", "D", "Bm", "Em", "C", "D", "G", "D7"]
+    chords = verse + verse + lift + verse
+    groove(t, chords, gain=0.9)
+    drums_pop(t, len(chords), 0.95)
+    stabs(t, lift + verse, 0.9)
+    call = [(74, .5), (79, .5), (78, .5), (79, .5), (81, 1), (79, .5), (76, .5),
+            (74, .5), (76, .5), (79, .5), (76, .5), (74, 2)]
+    answer = [(None, 1), (67, .5), (71, .5), (74, 1), (71, 1),
+              (72, .5), (71, .5), (69, .5), (71, .5), (67, 2)]
+    answer_up = [(None, 1), (67, .5), (71, .5), (74, 1), (76, 1),
+                 (78, .5), (79, .5), (81, .5), (78, .5), (79, 2)]
+    a = call + answer + call + answer_up
+    b = [(84, 1), (83, .5), (81, .5), (79, 1), (81, 1),
+         (83, .5), (81, .5), (79, .5), (78, .5), (79, 2),
+         (76, 1), (78, .5), (79, .5), (81, 1), (79, .5), (78, .5),
+         (76, .5), (74, .5), (72, .5), (71, .5), (71, 2),
+         (72, .5), (74, .5), (76, .5), (79, .5), (81, 1), (79, 1),
+         (78, .5), (79, .5), (81, .5), (83, .5), (81, 2),
+         (83, .5), (81, .5), (79, .5), (78, .5), (79, 1), (74, 1),
+         (76, .5), (78, .5), (81, .5), (78, .5), (79, 2)]
+    beat = 0
+    for repeat in range(2):
+        start = beat
+        beat = add_melody(t, call, flute, beat, 0.5)
+        beat = add_melody(t, answer, marimba, beat, 0.6)
+        beat = add_melody(t, call, flute, beat, 0.5)
+        beat = add_melody(t, answer_up, marimba, beat, 0.6)
+        if repeat == 1:
+            add_melody(t, a, glock, start, 0.1, octave=1)
+    beat = add_melody(t, b, marimba, beat, 0.6)
+    add_melody(t, b, glock, beat - 32, 0.12, octave=1)
+    beat = add_melody(t, call, flute, beat, 0.5)
+    beat = add_melody(t, answer, marimba, beat, 0.6)
+    beat = add_melody(t, call, flute, beat, 0.5)
+    add_melody(t, answer_up, marimba, beat, 0.6)
+    return t.render(0.16)
 
 
 def song_menu():

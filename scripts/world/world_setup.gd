@@ -33,6 +33,8 @@ static func apply_environment(world_environment: WorldEnvironment, sun: Directio
 	sun.directional_shadow_max_distance = 32.0
 	sun.directional_shadow_split_1 = 0.25
 	sun.shadow_blur = 1.4
+	# Sombras mais claras: dá para ver o caminho dentro delas.
+	sun.shadow_opacity = 0.5
 	sun.shadow_bias = 0.04
 	sun.shadow_normal_bias = 1.2
 

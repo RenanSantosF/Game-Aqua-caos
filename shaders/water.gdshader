@@ -2,7 +2,8 @@ shader_type spatial;
 // Água cartoon: ondas no vértice, cor por altura e brilhos animados.
 // Leve o bastante para celulares modestos (sem texturas).
 
-render_mode diffuse_toon, specular_toon;
+// cull_disabled: vista de baixo (de dentro do túnel submerso) também aparece.
+render_mode diffuse_toon, specular_toon, cull_disabled;
 
 uniform vec4 deep_color : source_color = vec4(0.04, 0.36, 0.78, 1.0);
 uniform vec4 shallow_color : source_color = vec4(0.25, 0.78, 1.0, 1.0);

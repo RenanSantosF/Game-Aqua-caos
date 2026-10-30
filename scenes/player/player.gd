@@ -33,7 +33,9 @@ enum State { NORMAL, DIVING, KNOCKED, GETTING_UP, IN_WATER, FROZEN, FINISHED }
 @export var slippery_accel := 9.0
 @export var slippery_friction := 2.5
 @export var slope_slide_accel := 20.0
-@export var max_slide_speed := 15.0
+@export var max_slide_speed := 13.0
+## Velocidade mínima descendo o escorregador (nunca "empaca", nem batendo na lateral).
+@export var min_slide_speed := 9.5
 
 @export_group("Quedas")
 @export var knock_time := 0.7
@@ -54,6 +56,8 @@ var coins := 0
 var invulnerable := false
 ## false nos rivais controlados pelo computador.
 var is_human := true
+## Quantas zonas de túnel submerso estão em volta (dentro do túnel não "cai na água").
+var tunnel_count := 0
 ## "Cérebro" do rival (null = controlado pelo jogador).
 var brain: BotBrain = null
 
@@ -112,7 +116,7 @@ func _physics_process(delta: float) -> void:
 			_sfx("land", -6.0)
 	_was_on_floor = on_floor
 
-	if state not in [State.IN_WATER, State.FINISHED] and global_position.y < water_level:
+	if state not in [State.IN_WATER, State.FINISHED] and global_position.y < water_level and tunnel_count == 0:
 		enter_water()
 
 	model.rotation.y = lerp_angle(model.rotation.y, facing_angle, minf(1.0, turn_speed * delta))
@@ -300,10 +304,16 @@ func _process_normal(delta: float) -> void:
 
 	_sliding = false
 	if slippery:
-		var normal := get_floor_normal()
+		var normal := _slide_normal()
 		var downhill := Vector2(normal.x, normal.z)
-		if downhill.length() > 0.05:
-			flat += downhill * slope_slide_accel * delta
+		if downhill.length() > 0.03:
+			var slide_dir := downhill.normalized()
+			# Empurrão forte desde o primeiro instante, mesmo em rampas suaves.
+			flat += slide_dir * slope_slide_accel * maxf(downhill.length(), 0.5) * delta
+			# Bater na lateral não tira a velocidade da descida.
+			var along := flat.dot(slide_dir)
+			if along < min_slide_speed:
+				flat += slide_dir * (min_slide_speed - along)
 			_sliding = true
 		flat = flat.limit_length(max_slide_speed)
 		_sliding = _sliding or flat.length() > run_speed * 1.1
@@ -408,6 +418,17 @@ func _apply_gravity(delta: float) -> void:
 func _is_floor_slippery() -> bool:
 	var floor_node := _floor_node()
 	return floor_node != null and floor_node.is_in_group("slippery")
+
+
+## Inclinação do escorregador: a da própria peça (as emendas entre peças
+## dão normais tortas que empurrariam o boneco para trás).
+func _slide_normal() -> Vector3:
+	var floor_node := _floor_node() as Node3D
+	if floor_node != null:
+		var up := floor_node.global_transform.basis.y.normalized()
+		if up.y > 0.5:
+			return up
+	return get_floor_normal()
 
 
 ## Em que objeto estamos pisando (teste curto para baixo, sem mover).
