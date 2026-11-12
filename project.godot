@@ -15,13 +15,15 @@ config/description="Corrida de obstáculos aquáticos 3D para celular."
 config/version="1.0.0"
 run/main_scene="res://scenes/menu/menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-boot_splash/bg_color=Color(0.117647, 0.533333, 0.898039, 1)
-boot_splash/image="res://assets/icon/splash.png"
+boot_splash/bg_color=Color(1, 0.886, 0.498, 1)
+boot_splash/show_image=false
 config/icon="res://icon.png"
 config/quit_on_go_back=false
 
 [autoload]
 
+FTSplash="*res://addons/ft_splash/ft_splash.gd"
+ScreenFit="*res://addons/play_compat/screen_fit.gd"
 Game="*res://scripts/autoload/game.gd"
 Sfx="*res://scripts/autoload/sfx.gd"
 Music="*res://scripts/autoload/music.gd"
@@ -34,7 +36,7 @@ window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/handheld/orientation=4
+window/handheld/orientation=6
 
 [editor_plugins]
 
