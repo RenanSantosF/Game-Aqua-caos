@@ -17,7 +17,8 @@ func _ready() -> void:
 
 func _layout() -> void:
 	var screen := get_viewport().get_visible_rect().size
-	_jump.position = Vector2(screen.x - 140, screen.y - 150)
+	var insets := Game.safe_insets(get_viewport())
+	_jump.position = Vector2(screen.x - 140 - insets.y, screen.y - 150)
 
 
 func set_enabled(enabled: bool) -> void:

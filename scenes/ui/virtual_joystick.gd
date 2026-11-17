@@ -20,7 +20,7 @@ func _ready() -> void:
 
 func _layout() -> void:
 	var screen := get_viewport().get_visible_rect().size
-	_rest = Vector2(170, screen.y - 150)
+	_rest = Vector2(170 + Game.safe_insets(get_viewport()).x, screen.y - 150)
 	if _touch_index == -1:
 		_origin = _rest
 	queue_redraw()
