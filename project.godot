@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Aqua Caos: Desafio Molhado"
 config/description="Corrida de obstáculos aquáticos 3D para celular."
-config/version="1.0.0"
+config/version="1.0.1"
 run/main_scene="res://scenes/menu/menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 boot_splash/bg_color=Color(1, 0.886, 0.498, 1)
