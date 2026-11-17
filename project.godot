@@ -27,6 +27,7 @@ Sfx="*res://scripts/autoload/sfx.gd"
 Music="*res://scripts/autoload/music.gd"
 Monetization="*res://scripts/autoload/monetization.gd"
 Transition="*res://scripts/autoload/transition.gd"
+Telemetry="*res://scripts/autoload/telemetry.gd"
 
 [display]
 

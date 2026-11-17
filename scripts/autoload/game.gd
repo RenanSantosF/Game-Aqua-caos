@@ -149,6 +149,7 @@ func total_stars() -> int:
 
 ## Registra a fase concluída e devolve um resumo para a tela de resultado.
 func complete_level(level: int, time: float, par_time: float, falls: int, coins_collected: int, place := 1) -> Dictionary:
+	Telemetry.level(level, place == 1, coins_collected)
 	var earned_stars := 1
 	if time <= par_time:
 		earned_stars = 3

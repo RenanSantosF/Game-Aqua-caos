@@ -2,7 +2,7 @@
 
 **Aqua Caos: Desafio Molhado** (`com.renansantosf.aquacaos`)
 
-Última atualização · Last updated · Última actualización: 2026-10-28
+Última atualização · Last updated · Última actualización: 2026-11-17
 
 Contato · Contact · Contacto: **renan_ferreira.es@outlook.com**
 
@@ -17,7 +17,10 @@ a privacidade a sério e coletamos o mínimo possível.
 - O progresso (fases, estrelas, recordes, moedas, skins e configurações)
   fica salvo **somente no seu aparelho**.
 - Não pedimos nome, e-mail, foto, localização nem cadastro.
-- Nada disso é enviado para nós.
+- Nada disso é enviado para nós (veja abaixo as estatísticas anônimas).
+
+### Estatísticas de uso anônimas
+Para sabermos quantas pessoas jogam, em que horários, por quanto tempo e se voltam a jogar, o jogo envia ao nosso servidor dados de uso anônimos: um código aleatório criado no próprio aparelho (não é o ID de publicidade e não identifica você), o início e a duração de cada sessão, as fases ou partidas concluídas com a pontuação, a versão do jogo, o sistema e o idioma do aparelho. Não enviamos nome, e-mail, contatos, fotos, localização nem o ID de publicidade. Esses dados servem apenas para melhorar os jogos, não são vendidos nem compartilhados. Para apagar o código, desinstale o jogo ou limpe os dados do app (um código novo é criado).
 
 ### Anúncios
 - O jogo mostra anúncios do **Google AdMob**: entre fases e, quando você
@@ -61,7 +64,10 @@ seriously and collect as little as possible.
 - Your progress (levels, stars, records, coins, skins and settings) is
   saved **only on your device**.
 - We do not ask for your name, email, photos, location or an account.
-- None of this is sent to us.
+- None of this is sent to us (see the anonymous statistics below).
+
+### Anonymous usage statistics
+To learn how many people play, at what times, for how long and whether they come back, the game sends anonymous usage data to our server: a random code created on the device (it is not the advertising ID and does not identify you), the start and length of each session, completed levels or games with the score, the game version, and the device's operating system and language. We do not send your name, email, contacts, photos, location or advertising ID. This data is used only to improve our games and is not sold or shared. To erase the code, uninstall the game or clear the app's data (a new code is created).
 
 ### Ads
 - The game shows **Google AdMob** ads: between levels and, when you choose
@@ -104,7 +110,10 @@ tomamos la privacidad en serio y recopilamos lo mínimo posible.
 - El progreso (niveles, estrellas, récords, monedas, skins y ajustes) se
   guarda **solo en tu dispositivo**.
 - No pedimos nombre, correo, fotos, ubicación ni registro.
-- Nada de esto se nos envía.
+- Nada de esto se nos envía (ver abajo las estadísticas anónimas).
+
+### Estadísticas de uso anónimas
+Para saber cuántas personas juegan, a qué horas, cuánto tiempo y si vuelven a jugar, el juego envía a nuestro servidor datos de uso anónimos: un código aleatorio creado en el propio dispositivo (no es el ID de publicidad y no te identifica), el inicio y la duración de cada sesión, los niveles o partidas terminados con la puntuación, la versión del juego, y el sistema y el idioma del dispositivo. No enviamos nombre, correo, contactos, fotos, ubicación ni el ID de publicidad. Estos datos se usan solo para mejorar los juegos y no se venden ni se comparten. Para borrar el código, desinstala el juego o borra los datos de la app (se crea un código nuevo).
 
 ### Anuncios
 - El juego muestra anuncios de **Google AdMob**: entre niveles y, si tú lo
