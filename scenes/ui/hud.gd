@@ -25,6 +25,27 @@ func _ready() -> void:
 	%ResumeButton.pressed.connect(set_paused.bind(false))
 	%RestartButton.pressed.connect(_on_restart)
 	%MenuButton.pressed.connect(_on_menu)
+	get_viewport().size_changed.connect(_apply_safe_area)
+	_apply_safe_area()
+
+
+## Afasta o HUD do notch/câmera do celular.
+func _apply_safe_area() -> void:
+	var insets := Game.safe_insets(get_viewport())
+	for child in $Root.get_children():
+		if child == _pause_menu or not child is Control:
+			continue
+		var c := child as Control
+		if not c.has_meta("base_left"):
+			c.set_meta("base_left", c.offset_left)
+			c.set_meta("base_right", c.offset_right)
+		var shift := 0.0
+		if c.anchor_left >= 0.99:
+			shift = -insets.y
+		elif c.anchor_right <= 0.01:
+			shift = insets.x
+		c.offset_left = c.get_meta("base_left") + shift
+		c.offset_right = c.get_meta("base_right") + shift
 
 
 func _notification(what: int) -> void:

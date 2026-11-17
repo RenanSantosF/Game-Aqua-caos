@@ -330,6 +330,21 @@ func mark_slow_device() -> void:
 	save_game()
 
 
+## Margens seguras (esquerda, direita) em pixels da tela do jogo, para nada
+## ficar embaixo do notch/câmera do celular agora que o jogo ocupa a tela toda.
+func safe_insets(viewport: Viewport) -> Vector2:
+	var win := DisplayServer.window_get_size()
+	if win.x <= 0 or win.y <= 0:
+		return Vector2.ZERO
+	var safe := DisplayServer.get_display_safe_area()
+	if safe.size.x <= 0:
+		return Vector2.ZERO
+	var scale := viewport.get_visible_rect().size.x / float(win.x)
+	var left := clampf(safe.position.x, 0.0, win.x * 0.15)
+	var right := clampf(win.x - safe.end.x, 0.0, win.x * 0.15)
+	return Vector2(left, right) * scale
+
+
 ## Aplica a qualidade na cena 3D atual (sol e resolução).
 func apply_graphics(viewport: Viewport, sun: DirectionalLight3D) -> void:
 	var low := low_graphics()

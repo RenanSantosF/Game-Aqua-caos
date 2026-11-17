@@ -98,6 +98,8 @@ jobs:
           unzip -q ~/.local/share/godot/export_templates/${GODOT_TEMPLATES}/android_source.zip -d android/build
           echo -n "${GODOT_TEMPLATES}" > android/.build_version
           touch android/build/.gdignore
+          # Avisos da Play Console (APIs de ponta a ponta descontinuadas no Android 15)
+          bash ci/android_play_compat.sh android/build
 
       - name: Numerar a versão com o número da execução
         run: sed -i "s/^version\/code=.*/version\/code=${{ github.run_number }}/" export_presets.cfg
