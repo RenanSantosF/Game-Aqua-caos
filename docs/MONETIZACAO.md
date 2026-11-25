@@ -22,9 +22,9 @@
 
 | Bloco | ID |
 |---|---|
-| App | `ca-app-pub-4311255826061303~5610988046` |
-| Entre fases (intersticial) | `ca-app-pub-4311255826061303/2764286671` |
-| Dobrar Moedas, Moedas Grátis, Skins (premiado) | `ca-app-pub-4311255826061303/1946029022` |
+| App | `ca-app-pub-4311255826061303~7218334715` |
+| Entre fases (intersticial) | `ca-app-pub-4311255826061303/3391674300` |
+| Dobrar Moedas, Moedas Grátis, Skins (premiado) | `ca-app-pub-4311255826061303/5662614428` |
 
 ### Anúncios de teste e anúncios reais
 

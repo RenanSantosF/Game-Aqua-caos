@@ -3,7 +3,7 @@ extends EditorPlugin
 ## Inclui o plugin Android de anúncios (android_plugin/) na exportação.
 ## O arquivo bin/aqua-ads.aar é gerado pelo GitHub Actions.
 
-const ADMOB_APP_ID := "ca-app-pub-4311255826061303~5610988046"
+const ADMOB_APP_ID := "ca-app-pub-4311255826061303~7218334715"
 const ADS_SDK := "com.google.android.gms:play-services-ads:25.5.0"
 const REMOVED_PERMISSIONS := [
 	"com.google.android.gms.permission.AD_ID",

@@ -13,8 +13,8 @@ signal purchase_completed(product: String)
 
 ## Seus blocos de anúncio no AdMob.
 const AD_UNITS := {
-	"interstitial": "ca-app-pub-4311255826061303/2764286671",  # Entre fases
-	"rewarded": "ca-app-pub-4311255826061303/1946029022",  # Dobrar moedas, moedas grátis, skins
+	"interstitial": "ca-app-pub-4311255826061303/3391674300",  # Entre fases
+	"rewarded": "ca-app-pub-4311255826061303/5662614428",  # Dobrar moedas, moedas grátis, skins
 }
 ## Blocos de teste oficiais do Google (sempre mostram anúncio de teste).
 const TEST_AD_UNITS := {
